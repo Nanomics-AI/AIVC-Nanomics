@@ -131,10 +131,15 @@ pert_emb       [B,256,380]
 先读 [`tahoe_decoder_v1_data.py`](../perturbation_scripts/tahoe_decoder_v1_data.py)：它通过稳定 locator 找回与 latent 对应的同一个物理细胞，并构造：
 
 ```text
-raw 5000-gene counts
-→ 每个细胞归一化到总量 10000
+原始 sparse counts
+→ 对该细胞所有成功映射到 GeneJEPA vocabulary 的基因求 library size
+→ 使用完整 mapped-gene library 做 CP10K
 → log1p
+→ 最后选择冻结的 5000-gene panel
 ```
+
+因此，5000-gene panel 只决定 Decoder 最终监督和输出哪些基因，不会决定
+CP10K 的 library-size denominator。
 
 再读 [`run_genejepa_decoder_v1.py`](../perturbation_scripts/run_genejepa_decoder_v1.py)，重点看 `build_decoder()`、训练 DataLoader、MSE、checkpoint 和 validation。
 

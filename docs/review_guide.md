@@ -141,8 +141,15 @@ The Decoder input is one signed 768-dimensional latent. Its supervised target is
 a frozen 5,000-gene vector constructed from the same physical cell:
 
 ```text
-raw panel counts → counts per 10,000 → log1p
+all mapped raw gene counts
+→ compute the full mapped-gene library size
+→ CP10K normalization
+→ log1p
+→ select the frozen 5,000-gene panel
 ```
+
+The 5,000-gene panel defines which targets are returned by the Decoder dataset;
+it does not define the denominator used for CP10K normalization.
 
 The architecture is:
 
