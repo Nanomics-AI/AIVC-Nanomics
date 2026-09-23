@@ -1,10 +1,12 @@
-# Lightweight frozen artifacts
+# Lightweight core-pipeline artifacts
 
-Only small, code-facing contracts are tracked in this directory:
+Only small artifacts required to interpret or run the core pipeline are tracked:
 
-- the Decoder v1 contract and frozen 5,000-gene panel;
-- the frozen HD100 gene panel;
-- Experiment 1 evaluation sampling and perturbation featurization;
-- B2 v2 and ST training protocols.
+- `genejepa_decoder_v1_contract.json`;
+- the frozen Decoder v1 5,000-gene panel and its summary;
+- the frozen drug/dose featurization specification;
+- the Epoch25 embedding/preprocessing provenance contract;
+- the ST-A-only training protocol.
 
-All generated predictions, metrics, caches, checkpoints, logs, large manifests, and scientific result tables remain local and are ignored by Git. Expected external artifacts and hashes are documented in `docs/provenance.md`.
+Raw data, embedding caches, checkpoints, generated predictions, metrics, and
+logs remain local and are excluded by `.gitignore`.

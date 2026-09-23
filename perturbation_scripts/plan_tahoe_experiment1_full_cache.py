@@ -23,7 +23,7 @@ RESULTS = PROJECT_ROOT / "results"
 DEFAULT_CONDITIONS = RESULTS / "tahoe_experiment1_condition_split_manifest.csv"
 DEFAULT_DATA_DIR = PROJECT_ROOT / "hf_data_cache" / "data" / "data"
 DEFAULT_LOCAL_MANIFEST = PROJECT_ROOT / "hf_data_cache" / "local_file_manifest.json"
-DEFAULT_EXTRACTION_MANIFEST = RESULTS / "tahoe_latent_audit_epoch25_manifest.json"
+DEFAULT_GENEJEPA_PROVENANCE = RESULTS / "tahoe_genejepa_epoch25_provenance.json"
 DEFAULT_OUTPUT_PREFIX = RESULTS / "tahoe_experiment1_cache_cap512_all_dmso"
 
 EXPECTED_SHARDS = 3388
@@ -699,7 +699,7 @@ def main() -> None:
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--local-manifest", type=Path, default=DEFAULT_LOCAL_MANIFEST)
     parser.add_argument(
-        "--extraction-manifest", type=Path, default=DEFAULT_EXTRACTION_MANIFEST
+        "--genejepa-provenance", type=Path, default=DEFAULT_GENEJEPA_PROVENANCE
     )
     parser.add_argument("--output-prefix", type=Path, default=DEFAULT_OUTPUT_PREFIX)
     parser.add_argument("--overwrite", action="store_true")
@@ -836,8 +836,10 @@ def main() -> None:
     )
     audit_seconds = time.perf_counter() - audit_started
 
-    extraction = json.loads(args.extraction_manifest.read_text(encoding="utf-8"))
-    rate = float(extraction["inference"]["cells_per_second"])
+    genejepa_provenance = json.loads(
+        args.genejepa_provenance.read_text(encoding="utf-8")
+    )
+    rate = float(genejepa_provenance["reference_extraction"]["cells_per_second"])
     single_hours = total_cells / rate / 3600
     payload_bytes = total_cells * EMBEDDING_DIM * FLOAT32_BYTES
 
@@ -923,10 +925,8 @@ def main() -> None:
             "condition_manifest_sha256": sha256_file(args.conditions),
             "local_manifest": relative(args.local_manifest),
             "local_manifest_sha256": sha256_file(args.local_manifest),
-            "epoch25_extraction_manifest": relative(args.extraction_manifest),
-            "epoch25_extraction_manifest_sha256": sha256_file(
-                args.extraction_manifest
-            ),
+            "genejepa_provenance": relative(args.genejepa_provenance),
+            "genejepa_provenance_sha256": sha256_file(args.genejepa_provenance),
             "dataset_shards": len(paths),
         },
         "selection": {

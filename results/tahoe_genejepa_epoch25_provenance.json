@@ -1,0 +1,35 @@
+{
+  "schema": "tahoe_genejepa_epoch25_provenance_v1",
+  "status": "frozen",
+  "checkpoint": {
+    "path": "checkpoints/genejepa_quarter_d12_h6_700k_e30_seed42_run1/scjepa-epoch=25-val_loss=0.179.ckpt",
+    "sha256": "6c6e89bc6d9349519250908cc4d4742c6319007f4f147328338952fa6cb98e9b",
+    "ema_teacher": true,
+    "frozen": true
+  },
+  "inputs": {
+    "local_manifest": "hf_data_cache/local_file_manifest.json",
+    "local_manifest_sha256": "a36d71aa7f4a8cee6aa3df9b7bcb96f7008e66622ed921255c841e297500900e",
+    "gene_metadata": "hf_data_cache/metadata/metadata/gene_metadata.parquet",
+    "gene_metadata_sha256": "d6104d1ca570d94832be0d27ffe8b7e4e54cfd366c9080239219f9c406eb751c",
+    "global_stats": "hf_data_cache/global_stats.json",
+    "global_stats_sha256": "c2f086a4560abc096511b7c33c4f294db87ba58e47bcee41cb1a952757691461",
+    "global_mean": 0.8255348793661643,
+    "global_std": 0.31346807453602465
+  },
+  "embedding": {
+    "dimension": 768,
+    "dtype": "float32",
+    "source": "Epoch25 EMA Teacher get_embedding()",
+    "preprocessing": [
+      "sentinel removal once",
+      "gene mapping once",
+      "log1p once",
+      "global mean/std normalization once"
+    ]
+  },
+  "reference_extraction": {
+    "device": "single NVIDIA RTX A6000",
+    "cells_per_second": 85.47608052384246
+  }
+}

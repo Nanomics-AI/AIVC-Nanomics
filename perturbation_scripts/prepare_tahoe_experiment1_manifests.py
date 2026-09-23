@@ -22,7 +22,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESULTS = PROJECT_ROOT / "results"
 CONDITIONS_INPUT = RESULTS / "tahoe_set_to_set_pairs.csv"
 METADATA_AUDIT_INPUT = RESULTS / "tahoe_metadata_audit_full.json"
-EXTRACTION_MANIFEST_INPUT = RESULTS / "tahoe_latent_audit_epoch25_manifest.json"
+GENEJEPA_PROVENANCE_INPUT = RESULTS / "tahoe_genejepa_epoch25_provenance.json"
 
 EDGE_OUTPUT = RESULTS / "tahoe_experiment1_edge_split_manifest.csv"
 CONDITION_OUTPUT = RESULTS / "tahoe_experiment1_condition_split_manifest.csv"
@@ -557,7 +557,7 @@ def build_cache_estimates(
         "extraction_rate_source": {
             "cells_per_second": extraction_rate,
             "device": "NVIDIA RTX A6000",
-            "source": "Experiment 0 full Epoch25 extraction manifest",
+            "source": "frozen Epoch25 extraction provenance",
             "estimate_range": "0.75x to 1.25x the measured throughput",
         },
         "size_scope": "float32 embedding payload only; index tables and array headers excluded",
@@ -599,9 +599,11 @@ def main() -> None:
     conditions = add_edge_and_pool_ids(conditions, edges)
     split_audit = audit_split(conditions, edges, expected_split_counts)
 
-    with EXTRACTION_MANIFEST_INPUT.open("r", encoding="utf-8") as handle:
-        extraction_manifest = json.load(handle)
-    extraction_rate = float(extraction_manifest["inference"]["cells_per_second"])
+    with GENEJEPA_PROVENANCE_INPUT.open("r", encoding="utf-8") as handle:
+        genejepa_provenance = json.load(handle)
+    extraction_rate = float(
+        genejepa_provenance["reference_extraction"]["cells_per_second"]
+    )
     cache_estimates, condition_capacity, cache_audit = build_cache_estimates(
         conditions, extraction_rate
     )
@@ -664,8 +666,10 @@ def main() -> None:
             "conditions_csv_sha256": sha256_file(CONDITIONS_INPUT),
             "metadata_audit_json": str(METADATA_AUDIT_INPUT.relative_to(PROJECT_ROOT)),
             "metadata_audit_json_sha256": sha256_file(METADATA_AUDIT_INPUT),
-            "extraction_manifest": str(EXTRACTION_MANIFEST_INPUT.relative_to(PROJECT_ROOT)),
-            "extraction_manifest_sha256": sha256_file(EXTRACTION_MANIFEST_INPUT),
+            "genejepa_provenance": str(
+                GENEJEPA_PROVENANCE_INPUT.relative_to(PROJECT_ROOT)
+            ),
+            "genejepa_provenance_sha256": sha256_file(GENEJEPA_PROVENANCE_INPUT),
             "source_rows": int(len(source)),
             "eligible_S256_rows": int(len(conditions)),
         },

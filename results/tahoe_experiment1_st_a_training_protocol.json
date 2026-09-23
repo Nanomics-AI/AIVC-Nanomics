@@ -1,0 +1,89 @@
+{
+  "schema": "tahoe_experiment1_st_a_training_protocol_v1",
+  "status": "frozen",
+  "model": {
+    "class": "StateTransitionPerturbationModel",
+    "prediction": "absolute treated latent",
+    "formula": "Zpred = project_out(transformer_hidden)",
+    "input_dim": 768,
+    "output_dim": 768,
+    "cell_set_len": 256,
+    "pert_dim": 380,
+    "predict_residual": false,
+    "final_activation": "identity",
+    "output_space": "embedding",
+    "basal_encoder": "Linear(768, 768)",
+    "perturbation_encoder": "Linear(380, 768)",
+    "project_out": "Linear(768, 768)",
+    "transformer": {
+      "class": "LlamaBidirectionalModel",
+      "hidden_size": 768,
+      "intermediate_size": 3072,
+      "num_hidden_layers": 8,
+      "num_attention_heads": 12,
+      "num_key_value_heads": 12,
+      "head_dim": 64,
+      "max_position_embeddings": 256,
+      "use_rotary_embeddings": false
+    },
+    "parameter_count": 101560320,
+    "trainable_parameter_count": 76984320
+  },
+  "data": {
+    "dataset_class": "TahoeExperiment1LatentSetDataset",
+    "train_conditions": 45652,
+    "val_conditions": 5657,
+    "test_conditions": 5684,
+    "input": {
+      "ctrl_cell_emb": [
+        "B",
+        256,
+        768
+      ],
+      "pert_emb": [
+        "B",
+        256,
+        380
+      ]
+    },
+    "target": {
+      "pert_cell_emb": [
+        "B",
+        256,
+        768
+      ]
+    },
+    "latent_preprocessing": "none; raw signed frozen Epoch25 embeddings"
+  },
+  "loss": {
+    "class": "geomloss.SamplesLoss",
+    "loss": "energy",
+    "blur": 0.05,
+    "reduction": "one Energy value per set, then batch mean"
+  },
+  "optimizer": {
+    "class": "torch.optim.AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "scheduler": null
+  },
+  "training": {
+    "seed": 42,
+    "precision": "bfloat16 model forward; float32 Energy",
+    "max_epochs": 30,
+    "early_stopping_patience": 5,
+    "batch_size_per_gpu": 64,
+    "world_size": 2,
+    "gradient_accumulation_steps": 2,
+    "effective_global_batch_size": 256,
+    "validation_metric": "edge-level mean Energy"
+  },
+  "implementation": {
+    "runner": "perturbation_scripts/run_tahoe_experiment1_st_a.py",
+    "dataset": "perturbation_scripts/tahoe_experiment1_latent_data.py",
+    "state_upstream_commit": "f182478607c75f6b8f6256409cc0b4b902f991e9",
+    "compatibility_patch": "patches/state_genejepa_st_a_compat.patch",
+    "compatibility_patch_sha256": "8f3d344dc1851566395d577684ecbe7a6e3bea34e07a7d6ada1c5ab75f68d924"
+  }
+}

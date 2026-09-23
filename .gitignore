@@ -66,10 +66,6 @@ results/*
 !results/genejepa_decoder_v1_contract.json
 !results/genejepa_decoder_v1_gene_panel.csv
 !results/genejepa_decoder_v1_gene_panel.json
-!results/genejepa_decoder_hd100_gene_panel.csv
-!results/genejepa_decoder_hd100_gene_panel.json
-!results/tahoe_experiment1_evaluation_sampling_protocol.json
 !results/tahoe_experiment1_perturbation_featurization.json
-!results/tahoe_experiment1_b2_v2_training_protocol.json
-!results/tahoe_experiment1_st_training_protocol_v2.json
-!results/github_code_upload_manifest.txt
+!results/tahoe_experiment1_st_a_training_protocol.json
+!results/tahoe_genejepa_epoch25_provenance.json

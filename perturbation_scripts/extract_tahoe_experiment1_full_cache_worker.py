@@ -25,7 +25,7 @@ import pyarrow.parquet as pq
 import torch
 
 try:
-    from extract_tahoe_latent_audit_embeddings import (
+    from tahoe_genejepa_embedding import (
         DEFAULT_CHECKPOINT,
         DEFAULT_LOCAL_MANIFEST,
         DEFAULT_STATS,
@@ -39,7 +39,7 @@ try:
         sha256_file,
     )
 except ModuleNotFoundError:  # Support import as perturbation_scripts.<module>.
-    from perturbation_scripts.extract_tahoe_latent_audit_embeddings import (
+    from perturbation_scripts.tahoe_genejepa_embedding import (
         DEFAULT_CHECKPOINT,
         DEFAULT_LOCAL_MANIFEST,
         DEFAULT_STATS,
@@ -58,7 +58,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESULTS = PROJECT_ROOT / "results"
 PREFIX = RESULTS / "tahoe_experiment1_cache_cap512_all_dmso"
 PLAN_SUMMARY = Path(str(PREFIX) + "_summary.json")
-E0_MANIFEST = RESULTS / "tahoe_latent_audit_epoch25_manifest.json"
+GENEJEPA_PROVENANCE = RESULTS / "tahoe_genejepa_epoch25_provenance.json"
 CONDITION_INDEX = Path(str(PREFIX) + "_condition_index.csv")
 CONTROL_INDEX = Path(str(PREFIX) + "_control_pool_index.csv")
 REFERENCE_SINGLE_RATE = 85.47608052384246
@@ -704,37 +704,50 @@ def build_provenance(paths: WorkerPaths) -> tuple[dict[str, Any], int]:
     if missing:
         raise ValueError(f"Worker plan missing columns: {sorted(missing)}")
 
-    e0 = read_json(E0_MANIFEST)
-    if e0.get("status") != "pass" or not e0["checkpoint"]["ema_teacher"]:
-        raise AssertionError("Experiment 0 extraction provenance is not pass/EMA teacher")
+    genejepa_provenance = read_json(GENEJEPA_PROVENANCE)
+    if (
+        genejepa_provenance.get("status") != "frozen"
+        or not genejepa_provenance["checkpoint"]["ema_teacher"]
+    ):
+        raise AssertionError("Epoch25 provenance is not frozen/EMA Teacher")
     checkpoint_sha = verify_file_hash(
-        DEFAULT_CHECKPOINT, e0["checkpoint"]["sha256"], "Epoch25 checkpoint"
+        DEFAULT_CHECKPOINT,
+        genejepa_provenance["checkpoint"]["sha256"],
+        "Epoch25 checkpoint",
     )
     local_manifest_sha = verify_file_hash(
         DEFAULT_LOCAL_MANIFEST,
-        e0["inputs"]["local_manifest_sha256"],
+        genejepa_provenance["inputs"]["local_manifest_sha256"],
         "local Tahoe manifest",
     )
     stats_sha = verify_file_hash(
-        DEFAULT_STATS, e0["inputs"]["global_stats_sha256"], "global stats"
+        DEFAULT_STATS,
+        genejepa_provenance["inputs"]["global_stats_sha256"],
+        "global stats",
     )
     metadata_path = resolve_metadata_path(DEFAULT_LOCAL_MANIFEST)
     metadata_sha = verify_file_hash(
-        metadata_path, e0["inputs"]["gene_metadata_sha256"], "gene metadata"
+        metadata_path,
+        genejepa_provenance["inputs"]["gene_metadata_sha256"],
+        "gene metadata",
     )
     for name in ("condition_index", "control_pool_index"):
         entry = plan_summary["outputs"][name]
         verify_file_hash(PROJECT_ROOT / entry["path"], entry["sha256"], name)
 
     global_stats = read_json(DEFAULT_STATS)
-    if not math.isclose(float(global_stats["mean"]), float(e0["inputs"]["global_mean"])):
+    if not math.isclose(
+        float(global_stats["mean"]),
+        float(genejepa_provenance["inputs"]["global_mean"]),
+    ):
         raise AssertionError("Global mean changed")
-    if not math.isclose(float(global_stats["std"]), float(e0["inputs"]["global_std"])):
+    if not math.isclose(
+        float(global_stats["std"]),
+        float(genejepa_provenance["inputs"]["global_std"]),
+    ):
         raise AssertionError("Global std changed")
 
-    reused_extractor = Path(__file__).with_name(
-        "extract_tahoe_latent_audit_embeddings.py"
-    )
+    embedding_helper = Path(__file__).with_name("tahoe_genejepa_embedding.py")
     provenance = {
         "policy": "treated cap=512 + all eligible DMSO; frozen v1",
         "plan_summary": {
@@ -757,8 +770,10 @@ def build_provenance(paths: WorkerPaths) -> tuple[dict[str, Any], int]:
             "frozen": True,
         },
         "preprocessing": {
-            "implementation": relative(reused_extractor),
-            "implementation_sha256": sha256_file(reused_extractor),
+            "implementation": relative(embedding_helper),
+            "implementation_sha256": sha256_file(embedding_helper),
+            "provenance": relative(GENEJEPA_PROVENANCE),
+            "provenance_sha256": sha256_file(GENEJEPA_PROVENANCE),
             "genejepa_data_sha256": sha256_file(PROJECT_ROOT / "genejepa" / "data.py"),
             "genejepa_models_sha256": sha256_file(
                 PROJECT_ROOT / "genejepa" / "models.py"
@@ -1795,7 +1810,7 @@ def run_batch_probe(args: argparse.Namespace) -> dict[str, Any]:
         },
         "results": results,
         "cross_batch_consistency": cross_batch,
-        "selection_rule": "Use the faster safe batch only for >=10% mean throughput gain and cross-batch allclose; otherwise keep the Experiment 0 batch=64.",
+        "selection_rule": "Use the faster safe batch only for >=10% mean throughput gain and cross-batch allclose; otherwise keep the validated batch=64.",
         "recommended_extraction_batch_size": recommendation,
         "fastest_vs_baseline_gain": improvement,
         "interpretation": (
