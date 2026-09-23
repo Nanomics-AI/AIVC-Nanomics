@@ -1,0 +1,35 @@
+{
+  "schema": "genejepa_decoder_hd100_gene_panel_v1",
+  "created_at_utc": "2026-09-18T06:12:17.803265+00:00",
+  "status": "frozen",
+  "selection_scope": "Experiment 1 train-treated physical cells only",
+  "ranking": [
+    "detection_rate descending",
+    "mean_logcp10k descending",
+    "genejepa_index ascending"
+  ],
+  "genes": 100,
+  "panel_rank": "zero-based 0..99",
+  "source": {
+    "path": "results/genejepa_decoder_gene_sparsity_train_stats.csv",
+    "sha256": "54dac1e1bd593ca7fe58174b5e65f3c66ab457512643d15c2ae00cc8e2b46528",
+    "size_bytes": 10604639
+  },
+  "current_variance_top5000": {
+    "path": "results/genejepa_decoder_v1_gene_panel.csv",
+    "sha256": "c4f79cfb0a37ec278d04c3f0045fa568872961445a9f251fff37dfa3d38d790e",
+    "size_bytes": 381211
+  },
+  "subset_assertion": {
+    "HD100_subset_of_current_Top5000": true,
+    "overlap": 100,
+    "expected": 100,
+    "current_panel_rank_recorded": true
+  },
+  "output": {
+    "path": "results/genejepa_decoder_hd100_gene_panel.csv",
+    "sha256": "a208bb9c2eb6e86554f9635661c439949603b969cc255192a1441ee2764f5f88",
+    "size_bytes": 9655
+  },
+  "selection_used_val_test_or_ARC7": false
+}

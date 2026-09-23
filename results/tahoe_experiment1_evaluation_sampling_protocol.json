@@ -1,0 +1,56 @@
+{
+  "schema": "tahoe_experiment1_evaluation_sampling_protocol_v1",
+  "status": "frozen",
+  "frozen_at_utc": "2026-09-09T01:03:27.466346+00:00",
+  "scope": [
+    "val",
+    "test"
+  ],
+  "S": 256,
+  "evaluation_repeat_count": 5,
+  "evaluation_base_seed": 42,
+  "evaluation_repeat_epochs": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "sampling_method": {
+    "name": "deterministic_repeated_subsampling_without_replacement",
+    "within_set_replacement": false,
+    "cross_repeat_overlap_allowed": true,
+    "large_cell_index_manifest_materialized": false
+  },
+  "dataset_sampling_rule": {
+    "class": "TahoeExperiment1LatentSetDataset",
+    "version": "tahoe_experiment1_set_v1",
+    "identity_fields": [
+      "seed",
+      "epoch",
+      "pair_id",
+      "side"
+    ],
+    "derivation": "sha256(version|seed|epoch|pair_id|side)[:8] big-endian -> PCG64 -> choice(size=256, replace=False)",
+    "implementation": "perturbation_scripts/tahoe_experiment1_latent_data.py"
+  },
+  "tahoe_experiment1_latent_data.py_sha256": "9f482ef606d91d10eaf28511bf6793d69832f08cac7d7bb2249210f56d49ae4d",
+  "shuffle": false,
+  "drop_last": false,
+  "all-models-share-identical-evaluation-indices": true,
+  "models": [
+    "B0",
+    "B1",
+    "B2",
+    "ST-A",
+    "ST-R"
+  ],
+  "model_identity_is_not_part_of_sampling_key": true,
+  "training_evaluation_decoupling": {
+    "evaluation_epochs_are_protocol_repeat_ids": true,
+    "evaluation_epochs_are_not_training_epochs": true,
+    "training_may_call_dataset_set_epoch_training_epoch": true
+  },
+  "experiment0_sampling_path_used": false,
+  "experiment0_BASE_SEEDS_used": false
+}

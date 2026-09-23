@@ -1,0 +1,51 @@
+{
+  "version": "tahoe_experiment1_drug_onehot_logdose_v1",
+  "status": "pass",
+  "vector_dtype": "float32",
+  "pert_dim": 380,
+  "set_replication": "The same perturbation vector is repeated for all 256 cells in a set.",
+  "drug_feature": {
+    "encoding": "one_hot",
+    "dimensions": 379,
+    "index_range": [
+      0,
+      378
+    ],
+    "vocabulary_order": "Python lexicographic order of exact drug strings",
+    "vocabulary_scope": "all Experiment 1 eligible_S256 conditions",
+    "shared_across_splits": true,
+    "train_covers_all_vocabulary_drugs": true,
+    "val_unseen_in_train": 0,
+    "test_unseen_in_train": 0
+  },
+  "dose_feature": {
+    "dimension_index": 379,
+    "input_unit": "uM",
+    "transform": "(log10(dose_uM) - mean) / std",
+    "fit_scope": "train eligible condition rows, one vote per condition",
+    "standard_deviation": "population, ddof=0",
+    "log10_mean": -0.24988218176754737,
+    "log10_std": 0.8297084171241076,
+    "allowed_dose_uM": [
+      0.05,
+      0.5,
+      5.0
+    ],
+    "encoded_values": {
+      "0.05": -1.2668882130180963,
+      "0.5": -0.06164552852641864,
+      "5": 1.1435971559652591
+    }
+  },
+  "excluded_features": [
+    "cell_line_id",
+    "plate",
+    "sample",
+    "moa",
+    "smiles",
+    "pubchem",
+    "esm"
+  ],
+  "drug_vocabulary": "results/tahoe_experiment1_drug_vocabulary.csv",
+  "drug_vocabulary_sha256": "5ebc31c5d22f43fa582aaddbe23e85769366a74133151941abd597c4d660ab5a"
+}

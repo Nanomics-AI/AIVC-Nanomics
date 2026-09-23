@@ -1,0 +1,92 @@
+diff --git a/src/state/tx/models/state_transition.py b/src/state/tx/models/state_transition.py
+index 20d0f0d..fe6ea7d 100644
+--- a/src/state/tx/models/state_transition.py
++++ b/src/state/tx/models/state_transition.py
+@@ -127,6 +127,14 @@ class StateTransitionPerturbationModel(PerturbationModel):
+             hidden_dim: not necessarily used, but required by PerturbationModel signature.
+             output_dim: dimension of the output space (genes or latent).
+             pert_dim: dimension of perturbation embedding.
++            predict_residual: if false, predict the absolute output. If true,
++                ``residual_mode`` selects the residual definition.
++            residual_mode: ``"legacy"`` preserves the existing STATE branches;
++                ``"output"`` computes ``project_out(hidden) + raw_basal`` and
++                therefore requires ``input_dim == output_dim``.
++            final_activation: ``"auto"`` preserves the existing STATE output
++                rule, ``"relu"`` forces non-negativity, and ``"identity"``
++                preserves signed outputs.
+             gpt: e.g. "TranslationTransformerSamplesModel".
+             model_kwargs: dictionary passed to that model's constructor.
+             loss: choice of distributional metric ("sinkhorn", "energy", etc.).
+@@ -146,6 +154,11 @@ class StateTransitionPerturbationModel(PerturbationModel):
+ 
+         # Save or store relevant hyperparams
+         self.predict_residual = predict_residual
++        self.residual_mode = kwargs.get("residual_mode", "legacy")
++        if self.residual_mode not in {"legacy", "output"}:
++            raise ValueError("residual_mode must be 'legacy' or 'output'")
++        if self.predict_residual and self.residual_mode == "output" and input_dim != output_dim:
++            raise ValueError("output-space residual requires input_dim == output_dim")
+         self.output_space = output_space
+         self.n_encoder_layers = kwargs.get("n_encoder_layers", 2)
+         self.n_decoder_layers = kwargs.get("n_decoder_layers", 2)
+@@ -234,11 +247,18 @@ class StateTransitionPerturbationModel(PerturbationModel):
+         # Internal cache for last token features (B, S, H) from transformer for aux loss
+         self._token_features: Optional[torch.Tensor] = None
+ 
+-        # if the model is outputting to counts space, apply relu
+-        # otherwise its in embedding space and we don't want to
++        # Keep the historical automatic rule as the default, but allow signed
++        # latent targets to opt out explicitly without changing hidden activations.
+         is_gene_space = kwargs["embed_key"] == "X_hvg" or kwargs["embed_key"] is None
+-        if is_gene_space or self.gene_decoder is None:
+-            self.relu = torch.nn.ReLU()
++        self.final_activation_name = kwargs.get("final_activation", "auto")
++        if self.final_activation_name not in {"auto", "relu", "identity"}:
++            raise ValueError("final_activation must be 'auto', 'relu', or 'identity'")
++        self.apply_output_relu = (
++            is_gene_space or self.gene_decoder is None
++            if self.final_activation_name == "auto"
++            else self.final_activation_name == "relu"
++        )
++        self.relu = torch.nn.ReLU()
+ 
+         self.use_batch_token = kwargs.get("use_batch_token", False)
+         self.basal_mapping_strategy = basal_mapping_strategy
+@@ -498,8 +518,11 @@ class StateTransitionPerturbationModel(PerturbationModel):
+         # Cache token features for auxiliary batch prediction loss (B, S, H)
+         self._token_features = res_pred
+ 
+-        # add to basal if predicting residual
+-        if self.predict_residual and self.output_space == "all":
++        # ST-R: predict a residual in the raw output space, then add raw control.
++        if self.predict_residual and self.residual_mode == "output":
++            out_pred = self.project_out(res_pred) + basal
++        # Preserve the existing STATE residual branches for old configurations.
++        elif self.predict_residual and self.output_space == "all":
+             # Project control_cells to hidden_dim space to match res_pred
+             # control_cells_hidden = self.project_to_hidden(control_cells)
+             # treat the actual prediction as a residual sum to basal
+@@ -510,9 +533,8 @@ class StateTransitionPerturbationModel(PerturbationModel):
+         else:
+             out_pred = self.project_out(res_pred)
+ 
+-        # apply relu if specified and we output to HVG space
+-        is_gene_space = self.hparams["embed_key"] == "X_hvg" or self.hparams["embed_key"] is None
+-        if is_gene_space or self.gene_decoder is None:
++        # GeneJEPA uses final_activation="identity" so signed coordinates survive.
++        if self.apply_output_relu:
+             out_pred = self.relu(out_pred)
+ 
+         output = out_pred.reshape(-1, self.output_dim)
+diff --git a/pyproject.toml b/pyproject.toml
+index 14afff2..2605eb3 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -30,6 +30,7 @@ dependencies = [
+     "cell-eval>=0.8.1",
+     "ipykernel>=6.30.1",
+     "scipy>=1.15.0",
++    "tensorboard>=2.21.0",
+ ]
+ 
+ [project.optional-dependencies]

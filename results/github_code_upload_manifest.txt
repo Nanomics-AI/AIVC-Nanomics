@@ -1,0 +1,71 @@
+AIVC-Nanomics code upload manifest
+==================================
+
+Prepared UTC date: 2026-09-23
+Source workspace: C:/SH/AIVC/GeneJEPA-main
+Target repository: https://github.com/Nanomics-AI/AIVC-Nanomics
+Target branch: project-code-audit-20260923
+Task file SHA-256: d637a921a78b6432f2d41c09167ac01f915af7dcac74a0d417ef9adee897a146
+
+Prepared staged payload
+-----------------------
+File count (including this manifest): 95
+Source files (.py/.sh): 70
+Configuration and lightweight machine-readable contract files: 13
+Documentation files (.md): 10
+Other files (patch plus this manifest): 2
+Total staged size in bytes: 3120953
+
+Largest 20 staged files
+-----------------------
+   751008  uv.lock
+   381211  results/genejepa_decoder_v1_gene_panel.csv
+    86100  perturbation_scripts/run_genejepa_decoder_v1.py
+    82443  perturbation_scripts/run_tahoe_experiment1_st_formal.py
+    80290  docs/project_history/prework_info.md
+    74899  perturbation_scripts/extract_tahoe_experiment1_full_cache_worker.py
+    67264  perturbation_scripts/analyze_tahoe_latent_experiment0.py
+    64373  perturbation_scripts/audit_author_genejepa_checkpoint.py
+    60805  perturbation_scripts/audit_genejepa_decoder_v1.py
+    58158  perturbation_scripts/audit_genejepa_decoder_gene_sparsity.py
+    53983  perturbation_scripts/author_genejepa_epoch49_hd100_cache.py
+    53542  perturbation_scripts/run_genejepa_decoder_v1_arc7_100.py
+    47329  perturbation_scripts/train_tahoe_experiment1_b2.py
+    43178  perturbation_scripts/plan_tahoe_experiment1_full_cache.py
+    43173  genejepa/train.py
+    43173  perturbation_scripts/run_genejepa_decoder_hd100_arc7.py
+    42295  perturbation_scripts/finalize_tahoe_experiment1.py
+    40955  perturbation_scripts/run_genejepa_decoder_v1_arc7_abc.py
+    36551  perturbation_scripts/tahoe_experiment1_latent_data.py
+    35605  perturbation_scripts/evaluate_tahoe_experiment1_b1.py
+
+Size audit
+----------
+Files larger than 10 MiB: 0
+Files larger than 50 MiB: 0
+Files larger than 100 MiB: 0
+
+Explicitly excluded local/runtime content
+-----------------------------------------
+.venv/, checkpoints/, hf_data_cache/, benchmark_data/, benchmark_results/,
+external/, data/, datasets/, logs/, runs/, wandb/, model_files/, Python caches,
+TensorBoard runs, generated logs/figures, raw and derived embedding payloads,
+model weights, and other generated results not in the explicit results allowlist.
+
+Forbidden staged payload audit
+------------------------------
+No staged files use these excluded payload extensions:
+.ckpt .pt .pth .npy .npz .h5 .h5ad .parquet .arrow .partial .zip .pdf .log
+
+Checks completed before commit
+------------------------------
+- Current non-backup .py/.sh inventory: PASS (70/70 present)
+- Source-to-upload SHA-256 comparison: PASS (0 mismatches)
+- Python compileall syntax check: PASS
+- STATE compatibility patch applies to upstream commit
+  f182478607c75f6b8f6256409cc0b4b902f991e9: PASS
+- High-confidence secret-pattern scan: PASS (0 findings)
+- Symlink audit: PASS (0 symlinks)
+
+This manifest describes code and lightweight reproducibility metadata only. It
+does not assert that excluded model/data artifacts are present in this Git repo.

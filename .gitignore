@@ -1,0 +1,75 @@
+# Python and tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Environments and local secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+*.pem
+*.key
+credentials/
+credentials.*
+
+# Raw data, downloaded repositories, and runtime directories
+hf_data_cache/
+benchmark_data/
+benchmark_results/
+parse_pbmc/
+checkpoints/
+external/
+data/
+datasets/
+logs/
+runs/
+wandb/
+model_files/
+
+# Model/data payloads never stored in ordinary Git
+*.ckpt
+*.pt
+*.pth
+*.npy
+*.npz
+*.h5
+*.h5ad
+*.parquet
+*.arrow
+*.partial
+*.zip
+*.pdf
+
+# Generated logs, figures, temporary files, and source snapshots
+*.log
+*_console.log
+*.png
+*.tmp
+*.bak
+*.before_*
+*.formal_run1_backup
+*.tensorboard_working
+.DS_Store
+
+# Results are local by default. Only the explicit lightweight contracts below
+# are versioned because current code resolves them at these paths.
+results/*
+!results/README.md
+!results/genejepa_decoder_v1_contract.json
+!results/genejepa_decoder_v1_gene_panel.csv
+!results/genejepa_decoder_v1_gene_panel.json
+!results/genejepa_decoder_hd100_gene_panel.csv
+!results/genejepa_decoder_hd100_gene_panel.json
+!results/tahoe_experiment1_evaluation_sampling_protocol.json
+!results/tahoe_experiment1_perturbation_featurization.json
+!results/tahoe_experiment1_b2_v2_training_protocol.json
+!results/tahoe_experiment1_st_training_protocol_v2.json
+!results/github_code_upload_manifest.txt

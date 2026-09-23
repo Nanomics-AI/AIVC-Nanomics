@@ -1,0 +1,192 @@
+{
+  "schema": "genejepa_decoder_v1_scientific_contract_v1",
+  "status": "frozen",
+  "created_at_utc": "2026-09-12T04:25:12.455825+00:00",
+  "scientific_decisions_frozen": true,
+  "encoder": {
+    "model": "GeneJEPA",
+    "checkpoint": {
+      "path": "checkpoints/genejepa_quarter_d12_h6_700k_e30_seed42_run1/scjepa-epoch=25-val_loss=0.179.ckpt",
+      "sha256": "6c6e89bc6d9349519250908cc4d4742c6319007f4f147328338952fa6cb98e9b",
+      "ema_teacher": true,
+      "frozen": true
+    },
+    "branch": "Epoch25 EMA Teacher get_embedding(use_teacher=True)",
+    "frozen": true
+  },
+  "decoder_input": {
+    "unit": "one physical Tahoe cell",
+    "shape": [
+      768
+    ],
+    "dtype": "float32",
+    "space": "raw signed GeneJEPA latent",
+    "transforms": {
+      "centering": false,
+      "whitening": false,
+      "l2_normalization": false,
+      "clipping": false,
+      "relu": false,
+      "latent_standardization": false
+    }
+  },
+  "gene_universe": {
+    "genes": 62710,
+    "genejepa_index_range": [
+      0,
+      62709
+    ],
+    "ordering": "ascending token_id",
+    "metadata_path": "hf_data_cache/metadata/metadata/gene_metadata.parquet",
+    "metadata_sha256": "d6104d1ca570d94832be0d27ffe8b7e4e54cfd366c9080239219f9c406eb751c"
+  },
+  "expression_target": {
+    "name": "log1p(CP10000)",
+    "construction_order": [
+      "remove leading negative sentinel",
+      "map all usable genes to GeneJEPA vocabulary",
+      "sum counts over all mapped GeneJEPA genes for L_i",
+      "CP10000 = 10000 * count / L_i",
+      "log1p",
+      "select Decoder gene panel"
+    ],
+    "denominator": "all mapped GeneJEPA genes after sentinel removal",
+    "output_dtype": "float32",
+    "output_range": "finite and non-negative"
+  },
+  "panel": {
+    "status": "formal_materialized_and_audited",
+    "path": "results/genejepa_decoder_v1_gene_panel.csv",
+    "sha256": "c4f79cfb0a37ec278d04c3f0045fa568872961445a9f251fff37dfa3d38d790e",
+    "rows": 5000,
+    "builder_path": "perturbation_scripts/tahoe_decoder_v1_data.py",
+    "builder_sha256": "0b9d2d4941b6034417f760f59377b5735b43f4065f4bf40032413dc054ed7087",
+    "builder_fingerprint": "c47fd22e411822144ede62dd2cbd9449f1e1fca1e88118338efa9874f83c88cc",
+    "statistics_scope": "Experiment 1 train treated physical cells only",
+    "processed_train_treated_cells": 22941936,
+    "candidate_universe": 62710,
+    "expression_space": "log1p(CP10000)",
+    "implicit_zeros_included": true,
+    "variance": "population, ddof=0",
+    "ranking": "variance descending",
+    "tie_breaker": "genejepa_index ascending",
+    "top_k": 5000,
+    "integrity_audit_path": "results/genejepa_decoder_v1_gene_panel_audit.json",
+    "integrity_audit_sha256": "806a6878dd5ba6dd05a819568f2ec129b7b21396f70a75d424cabe08835a6722"
+  },
+  "split": {
+    "ownership": "frozen Experiment 1 physical treated-cell edge split",
+    "train_treated_cells": 22941936,
+    "val_treated_cells": 2841724,
+    "test_treated_cells": 2856299,
+    "DMSO_used_for_decoder_fitting": false,
+    "condition_split_path": "results/tahoe_experiment1_condition_split_manifest.csv",
+    "condition_split_sha256": "fb263e74522c9c2a00ca150aca68d98c3a92ff7a221048dafc9cb58e83e8d30a",
+    "edge_split_path": "results/tahoe_experiment1_edge_split_manifest.csv",
+    "edge_split_sha256": "6f32fedbc064ef5711b644746199810370b3ffe69a1e45978361971840554d04",
+    "train_val_test_physical_cell_overlap": {
+      "train_val": 0,
+      "train_test": 0,
+      "val_test": 0
+    }
+  },
+  "architecture": {
+    "dimensions": [
+      768,
+      1024,
+      1024,
+      512,
+      5000
+    ],
+    "hidden_block": "Linear -> LayerNorm -> GELU -> Dropout(0.1)",
+    "residual_decoder": false,
+    "output_activation": "Softplus",
+    "parameter_count": 4931976
+  },
+  "training_loss": {
+    "name": "MSE",
+    "prediction_dtype": "float32",
+    "target_dtype": "float32",
+    "reduction_dtype": "float32",
+    "expression_space": "log1p(CP10000)"
+  },
+  "validation_and_checkpoint": {
+    "criterion": "exact full-validation global cell-by-gene MSE",
+    "definition": "global SSE over all validation cells and 5000 genes divided by global element count",
+    "DDP_reduction": "sum global SSE numerator and element-count denominator; do not average per-rank means",
+    "best_checkpoint": "strict minimum full-validation MSE",
+    "exact_tie": "keep earlier epoch"
+  },
+  "test_policy": {
+    "timing": "only after training is complete",
+    "may_influence_panel_or_model_selection": false,
+    "prohibited_influences": [
+      "panel",
+      "target",
+      "architecture",
+      "optimizer/hyperparameters",
+      "early stopping",
+      "checkpoint selection"
+    ]
+  },
+  "dataset": {
+    "class": "TahoeDecoderV1PairedDataset",
+    "implementation": "perturbation_scripts/tahoe_decoder_v1_data.py",
+    "implementation_sha256": "0b9d2d4941b6034417f760f59377b5735b43f4065f4bf40032413dc054ed7087",
+    "panel_lookup": "[62710] int32, default -1, constructed once per Dataset/worker",
+    "latent_lookup": "mmap[global_embedding_index]",
+    "rerun_genejepa": false
+  },
+  "provenance": {
+    "task": {
+      "path": "/mnt/c/SH/AIVC/当前任务.txt",
+      "sha256": "8ba9e5e9c99dc2e0cf6bc932c27bd6f243468620f9451a45ed5d9a7e767baa87"
+    },
+    "readiness_audit": {
+      "path": "results/genejepa_decoder_v1_readiness_audit.json",
+      "sha256": "20b4810c1df7de6f33b741083e0a096dfe06bd63b8b49830d7e216ed3bf7ddaf",
+      "status": "pass"
+    },
+    "lookup_equivalence_smoke": {
+      "path": "results/genejepa_decoder_v1_panel_lookup_equivalence_smoke.json",
+      "sha256": "c4b639e8ce7a00d69cb6c7b680a5a1e1de0fff2cfb6ba31ee43fe9a659d6a008",
+      "status": "pass"
+    },
+    "latent_cache_manifest": {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_embedding_manifest.json",
+      "sha256": "a7d7cf7495d479507037228ca83ec1c37cc5e328fb03ffd871e3d5ddfc356f1a",
+      "cache_path": "results/tahoe_experiment1_cache_cap512_all_dmso_embeddings.npy",
+      "cache_sha256": "f31a7b6fc6b665656c398cbb10ed3591b86fd7bb64dd2b26a3cc0b759f3f202b",
+      "cache_shape": [
+        30839089,
+        768
+      ],
+      "cache_dtype": "float32"
+    },
+    "documentation_waiver": {
+      "path": "/mnt/c/SH/AIVC/虚拟细胞_GeneJEPA_项目总资料_统一版_v2.1_20260911.md",
+      "present_in_local_workspace": false,
+      "waived": true,
+      "is_blocker": false,
+      "reason": "documentation-location issue; current checkout code and frozen PASS manifests/results are the implementation evidence"
+    }
+  },
+  "expected_train_treated_cells": 22941936,
+  "expected_val_treated_cells": 2841724,
+  "expected_test_treated_cells": 2856299,
+  "expected_panel_size": 5000,
+  "blockers": [],
+  "pending_artifacts": [],
+  "ready_for_contract_freeze": true,
+  "contract_frozen": true,
+  "ready_for_exact_config_smoke": true,
+  "ready_for_formal_training": false,
+  "updated_at_utc": "2026-09-14T00:33:35.844092+00:00",
+  "target_integrity_counts": {
+    "sentinel_cells": 22941936,
+    "unmapped_entries": 0,
+    "noninteger_count_entries": 0,
+    "duplicate_gene_entries_collapsed": 0,
+    "invalid_or_zero_library_cells": 0
+  }
+}
