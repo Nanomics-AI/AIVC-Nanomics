@@ -1,0 +1,236 @@
+{
+  "schema": "phase2_stav2_training_protocol_v1",
+  "created_at_utc": "2026-09-29T05:34:58.901666+00:00",
+  "status": "frozen",
+  "phase": "Task 2 / Phase II",
+  "task": {
+    "path": "/mnt/c/SH/AIVC/Phase II.md",
+    "size_bytes": 35990,
+    "sha256": "0da488785317b391296b08557c9c39e82307cb9335dd9039eb84d239152e75e9"
+  },
+  "data": {
+    "subset_manifest": {
+      "path": "results/phase2_stav2_subset_manifest.json",
+      "size_bytes": 7326,
+      "sha256": "62ff0c44b007e58f499019f4a8803a88a8dd5cf8569a7b96812f8a82e5e7e833"
+    },
+    "cache_plan": {
+      "path": "results/phase2_stav2_cache_plan.json",
+      "size_bytes": 2020,
+      "sha256": "2861f890eac5b9df9dd876492eaabaafc842962dfc8ce2b8ee50c19522520b65"
+    },
+    "dynamic_sampling_audit": {
+      "path": "results/phase2_stav2_dynamic_sampling_audit.json",
+      "size_bytes": 17180,
+      "sha256": "ec1c0934140cc534248f5bbcbadbc991a329265440cddd31302f57242685e813"
+    },
+    "conditions": {
+      "train": 4000,
+      "val": 500,
+      "test": 500
+    },
+    "cell_lines": [
+      "CVCL_0179",
+      "CVCL_0371",
+      "CVCL_1055",
+      "CVCL_1239",
+      "CVCL_1547"
+    ],
+    "treated_pool_cap": 512,
+    "control_pool_cap": 512,
+    "set_size": 256,
+    "training_sampling_epoch": "training epoch",
+    "validation_sampling_epoch": 0,
+    "final_test_sampling_epochs": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "sampling_seed": 42,
+    "latent_transforms": []
+  },
+  "conditioning": {
+    "drug": "Embedding(379,768)",
+    "dose": {
+      "schema": "phase2_stav2_dose_normalization_v1",
+      "created_at_utc": "2026-09-28T08:16:43.302678+00:00",
+      "status": "frozen",
+      "formula": "log1p(dose_uM) / log1p(max_train_dose_uM)",
+      "fit_scope": "Phase-II selected train conditions only",
+      "max_train_dose_uM": 5.0,
+      "train_dose_levels_uM": [
+        0.05,
+        0.5,
+        5.0
+      ],
+      "val_dose_range_uM": [
+        0.05,
+        5.0
+      ],
+      "test_dose_range_uM": [
+        0.05,
+        5.0
+      ],
+      "scaled_by_dose_uM": {
+        "0.05": 0.027230309094139912,
+        "0.5": 0.22629438553091683,
+        "5": 1.0
+      },
+      "dmso_no_drug_scaled": 0.0,
+      "positive_doses_strictly_positive_and_at_most_one": true,
+      "validation_or_test_exceeds_train_maximum": false
+    },
+    "formula": "Zinput = raw_Zcontrol + drug_embedding(drug_id) * dose_scaled",
+    "independent_380d_perturbation_encoder": "removed",
+    "double_conditioning": false
+  },
+  "model": {
+    "class": "local minimal Phase2STAv2 subclass of official StateTransitionPerturbationModel",
+    "kwargs": {
+      "input_dim": 768,
+      "hidden_dim": 768,
+      "output_dim": 768,
+      "pert_dim": 0,
+      "predict_residual": false,
+      "residual_mode": "output",
+      "final_activation": "identity",
+      "distributional_loss": "energy",
+      "transformer_backbone_key": "llama",
+      "transformer_backbone_kwargs": {
+        "bidirectional_attention": true,
+        "max_position_embeddings": 256,
+        "hidden_size": 768,
+        "intermediate_size": 3072,
+        "num_hidden_layers": 8,
+        "num_attention_heads": 12,
+        "num_key_value_heads": 12,
+        "head_dim": 64,
+        "use_cache": false,
+        "attention_dropout": 0.0,
+        "hidden_dropout": 0.0,
+        "layer_norm_eps": 1e-06,
+        "pad_token_id": 0,
+        "bos_token_id": 1,
+        "eos_token_id": 2,
+        "tie_word_embeddings": false,
+        "rotary_dim": 0,
+        "use_rotary_embeddings": false
+      },
+      "output_space": "embedding",
+      "embed_key": "X_author_genejepa_epoch49",
+      "gene_decoder_bool": false,
+      "cell_set_len": 256,
+      "n_encoder_layers": 1,
+      "n_decoder_layers": 1,
+      "activation": "gelu",
+      "dropout": 0.0,
+      "loss": "energy",
+      "blur": 0.05,
+      "mmd_num_chunks": 1,
+      "randomize_mmd_chunks": false,
+      "extra_tokens": 0,
+      "batch_encoder": false,
+      "batch_predictor": false,
+      "use_batch_token": false,
+      "confidence_token": false,
+      "finetune_vci_decoder": false,
+      "log1p_from_raw_counts": false,
+      "lora": {
+        "enable": false
+      }
+    },
+    "architecture_audit": {
+      "schema": "phase2_stav2_architecture_audit_v1",
+      "created_at_utc": "2026-09-29T05:34:58.878812+00:00",
+      "status": "pass",
+      "checks": {
+        "drug_embedding_shape": true,
+        "drug_embedding_trainable": true,
+        "pert_encoder_absent": true,
+        "basal_encoder_linear_768": true,
+        "project_out_linear_768": true,
+        "llama_bidirectional": true,
+        "eight_layers": true,
+        "twelve_heads": true,
+        "hidden_768": true,
+        "intermediate_3072": true,
+        "no_rotary": true,
+        "absolute_prediction": true,
+        "identity_output": true,
+        "energy_blur_005": true,
+        "disabled_extra_heads": true,
+        "total_parameters_exact": true,
+        "trainable_parameters_exact": true
+      },
+      "total_parameters": 101558784,
+      "trainable_parameters": 76982784,
+      "expected_total_parameters": 101558784,
+      "expected_trainable_parameters": 76982784,
+      "drug_embedding_parameters": 291072,
+      "state_dict_has_drug_embedding": true,
+      "state_dict_pert_encoder_keys": [],
+      "conditioning": "Embedding(379,768) * dose_scaled + control",
+      "independent_perturbation_encoder": "removed",
+      "source": {
+        "path": "perturbation_scripts/phase2_stav2_model.py",
+        "size_bytes": 7870,
+        "sha256": "f3a1e4609ed788ea6a3d936bb45da5851d9c46e3c0ba3214e62715ebb0816beb"
+      }
+    },
+    "absolute_prediction": true,
+    "output_activation": "identity",
+    "output_shape": [
+      "B",
+      256,
+      768
+    ]
+  },
+  "loss": {
+    "class": "geomloss.SamplesLoss",
+    "loss": "energy",
+    "blur": 0.05
+  },
+  "optimizer": {
+    "class": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "scheduler": null
+  },
+  "training": {
+    "seed": 42,
+    "max_epochs": 30,
+    "early_stopping_patience": 5,
+    "precision": "BF16 model forward + FP32 Energy",
+    "world_size": 2,
+    "batch_size_per_gpu": 64,
+    "gradient_accumulation_steps": 2,
+    "effective_global_batch": 256,
+    "num_workers_per_rank": 2,
+    "validation_metric": "edge-level mean Energy",
+    "test_used_for_checkpoint_selection": false
+  },
+  "implementation": {
+    "runner": {
+      "path": "perturbation_scripts/run_phase2_stav2.py",
+      "size_bytes": 47348,
+      "sha256": "9402104a5f0e1a5954bc24be4c2f78be4127a753053e644cd5e461176d0b0574"
+    },
+    "dataset": {
+      "path": "perturbation_scripts/phase2_stav2_dataset.py",
+      "size_bytes": 10477,
+      "sha256": "a75a466862d69d81255fd92edcbec2b14c55fdb3bfa12799b349d9e2d53b62b0"
+    },
+    "model": {
+      "path": "perturbation_scripts/phase2_stav2_model.py",
+      "size_bytes": 7870,
+      "sha256": "f3a1e4609ed788ea6a3d936bb45da5851d9c46e3c0ba3214e62715ebb0816beb"
+    },
+    "reused_sampler": "TahoeExperiment1LatentSetDataset._sample_range",
+    "reused_dataloader": "tahoe_experiment1_latent_data.make_dataloader",
+    "reused_aggregation": "evaluate_tahoe_experiment1_b0.aggregate"
+  },
+  "phase3_started": false
+}

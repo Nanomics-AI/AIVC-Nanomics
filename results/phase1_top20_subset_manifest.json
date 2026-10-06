@@ -1,0 +1,147 @@
+{
+  "schema": "phase1_top20_subset_manifest_v1",
+  "created_at_utc": "2026-09-27T10:19:12.033973+00:00",
+  "status": "pass",
+  "task": {
+    "path": "/mnt/c/SH/AIVC/20260927新路线总纲.md",
+    "size_bytes": 26683,
+    "sha256": "5f2b177f00c309ba6409a9fea907153253a09de73c6efabacf1d42adf6dcae75",
+    "expected_sha256": "5f2b177f00c309ba6409a9fea907153253a09de73c6efabacf1d42adf6dcae75",
+    "phase": "Task 1 / Phase I"
+  },
+  "selection": {
+    "seed": 42,
+    "algorithm": "deterministic coverage-aware cell-line/context/condition selection v1",
+    "cell_line_count": 5,
+    "cell_line_ranking": [
+      "minimum train/val/test eligible edge coverage descending",
+      "eligible edge count descending",
+      "eligible condition count descending",
+      "cell_line_id ascending"
+    ],
+    "condition_quotas_per_cell_line": {
+      "train": 50,
+      "val": 8,
+      "test": 12
+    },
+    "dose_policy": "quota balanced across 0.05/0.5/5.0 uM",
+    "context_policy": "one distinct matched control pool per cell-line/split/dose; maximize available distinct edges then seed-42 SHA-256 tie-break",
+    "condition_policy": "one condition per edge; seed-42 SHA-256 priority",
+    "cell_policy": "256 unique cached physical cells per condition/control pool; seed-42 SHA-256 priority",
+    "new_train_val_test_split_generated": false
+  },
+  "source": {
+    "condition_index": {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_condition_index.csv",
+      "size_bytes": 29099253,
+      "sha256": "80dc693034399b21b8f98add57927ad52e647872fd472be2f91147f00a073ff1"
+    },
+    "control_pool_index": {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_control_pool_index.csv",
+      "size_bytes": 97243,
+      "sha256": "57658c1aade95d27acb69a7fd65a593273690073d674bd9c2081dc22ecf8d5be"
+    },
+    "cache_plan_summary": {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_summary.json",
+      "size_bytes": 7491,
+      "sha256": "4d76728566d90f707f74a1b6493d7db65ae752d5ebb49211bb3ab4dba2506d1a"
+    },
+    "embedding_manifest": {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_embedding_manifest.json",
+      "size_bytes": 2218,
+      "sha256": "a7d7cf7495d479507037228ca83ec1c37cc5e328fb03ffd871e3d5ddfc356f1a"
+    }
+  },
+  "outputs": {
+    "cells": {
+      "path": "results/phase1_top20_subset_cells.parquet",
+      "size_bytes": 3211159,
+      "sha256": "3474dbec7c886308a169d63a0c8f06ce19dd8e73f0c29ed1bb11d886aef10058"
+    },
+    "conditions": {
+      "path": "results/phase1_top20_subset_conditions.csv",
+      "size_bytes": 212708,
+      "sha256": "071cb44ab1dc6a234bce57b6f74d9b18b8cfeedc6efe8a219018ec0aa24890eb"
+    },
+    "contexts": {
+      "path": "results/phase1_top20_subset_contexts.csv",
+      "size_bytes": 15695,
+      "sha256": "db2d331d25fb8ca1367738a0960c28c8f77f9f792e1c8fc5fba239bbfe83962d"
+    },
+    "summary_csv": {
+      "path": "results/phase1_top20_subset_summary.csv",
+      "size_bytes": 53424,
+      "sha256": "17467b5ad32783f219b08212f69f81fc345f4721b85711106e5ac0251f9406e0"
+    },
+    "summary_json": {
+      "path": "results/phase1_top20_subset_summary.json",
+      "size_bytes": 3014,
+      "sha256": "e6d971518921177c8ed0dc42349d68dd8deb4c8b16accdaa5f55e7d89b3e55a2"
+    },
+    "top20_panel": {
+      "path": "results/phase1_top20_gene_panel.csv",
+      "size_bytes": 2051,
+      "sha256": "7dbcaf163164bcc0da86527713e744a2d4533ad5a15b160d96799ef63a16d7ba"
+    },
+    "top20_panel_manifest": {
+      "path": "results/phase1_top20_gene_panel.json",
+      "size_bytes": 4047,
+      "sha256": "6695640bba3af3b94b6e13b03d0df8d7820e5ecbb33eeb5647a2baba5b4e1254"
+    },
+    "targets": {
+      "path": "results/phase1_top20_targets.npy",
+      "size_bytes": 8089728,
+      "sha256": "0e2c96be80b6108000b0e3b4e0deddd186b6a75d73c0c8a118b0bab5de307e93"
+    },
+    "target_manifest": {
+      "path": "results/phase1_top20_target_manifest.json",
+      "size_bytes": 1539,
+      "sha256": "df49aae7d046eab2b31b31bf763a3c1fa71976681faa33c31b37dc91f6a61e79"
+    },
+    "our_embeddings": {
+      "path": "results/phase1_our_genejepa_embeddings.npy",
+      "size_bytes": 310640768,
+      "sha256": "ecde82af7a64d42547368d7021ed800f479fe212ac7ee0a59487e614495ec06e"
+    },
+    "our_embedding_manifest": {
+      "path": "results/phase1_our_genejepa_embedding_manifest.json",
+      "size_bytes": 1598,
+      "sha256": "5d14bd8132bb84fa54aa914d391d9b0651c6f36f627abd2116fa04c94a2592fa"
+    },
+    "author_plan_summary": {
+      "path": "results/phase1_author_genejepa_cache/plan_summary.json",
+      "size_bytes": 1912,
+      "sha256": "a568846d291a0c9e051705bc39fb66ea978b28defed7e787aa8a410eb88e01f6"
+    }
+  },
+  "counts": {
+    "total_unique_cells": 101120,
+    "treated_cells": 89600,
+    "control_cells": 11520,
+    "conditions": 350,
+    "edges": 350,
+    "drugs": 234,
+    "cell_lines": 5,
+    "control_contexts": 45
+  },
+  "fairness_contract": {
+    "phase1_cell_index_shared_by_our_author_and_target": true,
+    "our_author_exact_same_physical_cells": true,
+    "top20_identical": true,
+    "target_identical": true
+  },
+  "hard_checks": {
+    "duplicate_physical_cells": 0,
+    "duplicate_stable_locators": 0,
+    "invalid_locators": 0,
+    "edge_split_leakage": 0,
+    "control_pool_split_leakage": 0,
+    "worker_overlap": 0,
+    "worker_union_cells": 101120,
+    "test_conditions_per_context": [
+      4
+    ]
+  },
+  "phase2_implemented": false,
+  "elapsed_seconds": 2252.570828295
+}

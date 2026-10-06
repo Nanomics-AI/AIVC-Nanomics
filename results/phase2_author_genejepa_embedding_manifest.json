@@ -1,0 +1,115 @@
+{
+  "schema": "phase2_author_genejepa_embedding_manifest_v1",
+  "created_at_utc": "2026-09-29T05:28:16.312177+00:00",
+  "status": "pass",
+  "scope": "Task 2 / Phase II exact selected physical-cell cache",
+  "subset_manifest": {
+    "path": "results/phase2_stav2_subset_manifest.json",
+    "sha256": "62ff0c44b007e58f499019f4a8803a88a8dd5cf8569a7b96812f8a82e5e7e833",
+    "size_bytes": 7326
+  },
+  "cache_plan": {
+    "path": "results/phase2_stav2_cache_plan.json",
+    "sha256": "2861f890eac5b9df9dd876492eaabaafc842962dfc8ce2b8ee50c19522520b65",
+    "size_bytes": 2020
+  },
+  "reused_phase1_manual_mean_parity": {
+    "path": "results/phase1_author_manual_mean_parity.json",
+    "sha256": "308765bc97a2fc2cad2156b56ad4241fe13e890f653d23b9f468a3f0e49f2763",
+    "size_bytes": 2126
+  },
+  "checkpoint": {
+    "path": "external/author_genejepa/genejepa-epoch=49.ckpt",
+    "sha256": "5db5c5750aeecc09955fefcaf143b349d9d8e1e877fe4a1073400ba66ef56f05",
+    "size_bytes": 3337799886,
+    "ema_teacher": true,
+    "branch": "teacher_encoder.ema_model",
+    "frozen": true
+  },
+  "pooling": {
+    "source": "EMA Teacher final_norm [B,512,768]",
+    "operation": "manual mean(dim=1)",
+    "tokens_persisted": false
+  },
+  "workers": [
+    {
+      "worker_id": 0,
+      "plan": {
+        "path": "results/phase2_author_genejepa_cache/cache_worker0_plan.parquet",
+        "sha256": "5b54d28f769fa069f518333487d89ba4ada851ae8584ab578bfc746ff5d670a9",
+        "size_bytes": 26353596
+      },
+      "manifest": {
+        "path": "results/phase2_author_genejepa_cache/cache_worker0_extraction_manifest.json",
+        "sha256": "eebf7c5a04eb2dd3db53cd26698fa224df9820cbaf98ff7dd65c9cecb5537435",
+        "size_bytes": 9599
+      },
+      "embedding": {
+        "path": "results/phase2_author_genejepa_cache/cache_worker0_embeddings.npy",
+        "sha256": "9d4321c543e8d6938e905ff149ad198cfcfca518873ed6592c785a208a726ebe",
+        "size_bytes": 3914576000
+      }
+    },
+    {
+      "worker_id": 1,
+      "plan": {
+        "path": "results/phase2_author_genejepa_cache/cache_worker1_plan.parquet",
+        "sha256": "02b3de9f91a5626da642f6e2ed4a46e45ffe08829b27e284db429bb1a4fe9c37",
+        "size_bytes": 26335110
+      },
+      "manifest": {
+        "path": "results/phase2_author_genejepa_cache/cache_worker1_extraction_manifest.json",
+        "sha256": "5c0d385eae8bb5429bfd14e1bab59c0c3d2ce8b0d89167b2200bb7ffeb1f7eb1",
+        "size_bytes": 9742
+      },
+      "embedding": {
+        "path": "results/phase2_author_genejepa_cache/cache_worker1_embeddings.npy",
+        "sha256": "d3665527d69d92eb0e14b6441a59d7544acd68ed5378e8665daa0c1017516f95",
+        "size_bytes": 3911295104
+      }
+    }
+  ],
+  "output": {
+    "path": "results/phase2_author_genejepa_embeddings.npy",
+    "sha256": "4dc190823d0489a6c6f51e45e0d326f336b4337e1196647294f5b89b3cd23beb",
+    "size_bytes": 7825870976,
+    "shape": [
+      2547484,
+      768
+    ],
+    "dtype": "float32",
+    "row_equals_phase2_cell_index": true
+  },
+  "integrity": {
+    "cells": 2547484,
+    "treated_cells": 2511697,
+    "control_cells": 35787,
+    "missing": 0,
+    "duplicate": 0,
+    "finite": true,
+    "signed": true,
+    "worker_overlap": 0
+  },
+  "embedding_statistics": {
+    "shape": [
+      2547484,
+      768
+    ],
+    "dtype": "float32",
+    "finite": true,
+    "min": -3.262101411819458,
+    "max": 3.872887372970581,
+    "mean": 0.00022593077454524985,
+    "std": 0.9076251971823877,
+    "negative_ratio": 0.5136087208782927,
+    "positive_ratio": 0.48639127861058207,
+    "norm": {
+      "count": 2547484,
+      "min": 24.307464155378515,
+      "max": 25.499135921303,
+      "mean": 25.152566764561023,
+      "std": 0.11895903077960464
+    }
+  },
+  "elapsed_seconds": 301.82113001699327
+}

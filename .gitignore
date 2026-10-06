@@ -9,7 +9,7 @@ dist/
 wheels/
 *.egg-info/
 
-# Environments and local secrets
+# Environments and secrets
 .venv/
 venv/
 env/
@@ -20,52 +20,46 @@ env/
 credentials/
 credentials.*
 
-# Raw data, downloaded repositories, and runtime directories
-hf_data_cache/
-benchmark_data/
-benchmark_results/
-parse_pbmc/
-checkpoints/
-external/
+# External data, repositories, checkpoints, and runtime directories
 data/
 datasets/
+hf_data_cache/
+external/
+checkpoints/
 logs/
 runs/
 wandb/
-model_files/
 
-# Model/data payloads never stored in ordinary Git
-*.ckpt
+# Model and data payloads
 *.pt
 *.pth
+*.ckpt
 *.npy
 *.npz
 *.h5
 *.h5ad
+*.partial
 *.parquet
 *.arrow
-*.partial
-*.zip
-*.pdf
 
-# Generated logs, figures, temporary files, and source snapshots
+# Logs and temporary files
 *.log
-*_console.log
-*.png
 *.tmp
 *.bak
-*.before_*
-*.formal_run1_backup
-*.tensorboard_working
 .DS_Store
 
-# Results are local by default. Only the explicit lightweight contracts below
-# are versioned because current code resolves them at these paths.
+# Results are local by default. Only the frozen lightweight contracts below
+# belong to the source-review repository.
 results/*
-!results/README.md
-!results/genejepa_decoder_v1_contract.json
-!results/genejepa_decoder_v1_gene_panel.csv
-!results/genejepa_decoder_v1_gene_panel.json
-!results/tahoe_experiment1_perturbation_featurization.json
-!results/tahoe_experiment1_st_a_training_protocol.json
-!results/tahoe_genejepa_epoch25_provenance.json
+!results/phase1_top20_gene_panel.csv
+!results/phase1_top20_gene_panel.json
+!results/tahoe_experiment1_drug_vocabulary.csv
+!results/phase2_stav2_dose_normalization.json
+!results/phase2_stav2_training_protocol.json
+!results/phase3_set_decoder_training_protocol.json
+!results/phase3_decoder_selection.json
+!results/phase1_top20_subset_manifest.json
+!results/phase2_stav2_subset_manifest.json
+!results/phase2_stav2_cache_plan.json
+!results/phase2_author_genejepa_embedding_manifest.json
+!results/phase3_top20_expression_cache_manifest.json

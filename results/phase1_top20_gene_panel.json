@@ -1,0 +1,165 @@
+{
+  "schema": "phase1_top20_gene_panel_v1",
+  "created_at_utc": "2026-09-27T09:40:20.920456+00:00",
+  "status": "frozen",
+  "genes": 20,
+  "selection": "first 20 rows of frozen HD100; zero-based panel_rank 0..19",
+  "source": {
+    "path": "results/genejepa_decoder_hd100_gene_panel.csv",
+    "size_bytes": 9655,
+    "sha256": "a208bb9c2eb6e86554f9635661c439949603b969cc255192a1441ee2764f5f88",
+    "manifest": {
+      "path": "results/genejepa_decoder_hd100_gene_panel.json",
+      "size_bytes": 1156,
+      "sha256": "fd4778392c8c4ce73125a8aeea6f02c897ebcfca0480c8cf95daa5290b2a38be"
+    }
+  },
+  "output": {
+    "path": "results/phase1_top20_gene_panel.csv",
+    "size_bytes": 2051,
+    "sha256": "7dbcaf163164bcc0da86527713e744a2d4533ad5a15b160d96799ef63a16d7ba"
+  },
+  "gene_identity": [
+    {
+      "panel_rank": 0,
+      "genejepa_index": 39718,
+      "gene_symbol": "MALAT1",
+      "ensembl_id": "ENSG00000251562",
+      "token_id": 39721
+    },
+    {
+      "panel_rank": 1,
+      "genejepa_index": 21398,
+      "gene_symbol": "MT-RNR2",
+      "ensembl_id": "ENSG00000210082",
+      "token_id": 21401
+    },
+    {
+      "panel_rank": 2,
+      "genejepa_index": 21434,
+      "gene_symbol": "MT-RNR1",
+      "ensembl_id": "ENSG00000211459",
+      "token_id": 21437
+    },
+    {
+      "panel_rank": 3,
+      "genejepa_index": 37292,
+      "gene_symbol": "NEAT1",
+      "ensembl_id": "ENSG00000245532",
+      "token_id": 37295
+    },
+    {
+      "panel_rank": 4,
+      "genejepa_index": 61487,
+      "gene_symbol": "TALAM1",
+      "ensembl_id": "ENSG00000289740",
+      "token_id": 61490
+    },
+    {
+      "panel_rank": 5,
+      "genejepa_index": 17899,
+      "gene_symbol": "MT-ND4",
+      "ensembl_id": "ENSG00000198886",
+      "token_id": 17902
+    },
+    {
+      "panel_rank": 6,
+      "genejepa_index": 3913,
+      "gene_symbol": "GAPDH",
+      "ensembl_id": "ENSG00000111640",
+      "token_id": 3916
+    },
+    {
+      "panel_rank": 7,
+      "genejepa_index": 1126,
+      "gene_symbol": "PABPC1",
+      "ensembl_id": "ENSG00000070756",
+      "token_id": 1129
+    },
+    {
+      "panel_rank": 8,
+      "genejepa_index": 17838,
+      "gene_symbol": "MT-ND5",
+      "ensembl_id": "ENSG00000198786",
+      "token_id": 17841
+    },
+    {
+      "panel_rank": 9,
+      "genejepa_index": 11892,
+      "gene_symbol": "HSP90B1",
+      "ensembl_id": "ENSG00000166598",
+      "token_id": 11895
+    },
+    {
+      "panel_rank": 10,
+      "genejepa_index": 2059,
+      "gene_symbol": "HSP90AB1",
+      "ensembl_id": "ENSG00000096384",
+      "token_id": 2062
+    },
+    {
+      "panel_rank": 11,
+      "genejepa_index": 1308,
+      "gene_symbol": "FNDC3B",
+      "ensembl_id": "ENSG00000075420",
+      "token_id": 1311
+    },
+    {
+      "panel_rank": 12,
+      "genejepa_index": 16439,
+      "gene_symbol": "PTMA",
+      "ensembl_id": "ENSG00000187514",
+      "token_id": 16442
+    },
+    {
+      "panel_rank": 13,
+      "genejepa_index": 550,
+      "gene_symbol": "TRIO",
+      "ensembl_id": "ENSG00000038382",
+      "token_id": 553
+    },
+    {
+      "panel_rank": 14,
+      "genejepa_index": 4720,
+      "gene_symbol": "PRRC2C",
+      "ensembl_id": "ENSG00000117523",
+      "token_id": 4723
+    },
+    {
+      "panel_rank": 15,
+      "genejepa_index": 13526,
+      "gene_symbol": "CHD2",
+      "ensembl_id": "ENSG00000173575",
+      "token_id": 13529
+    },
+    {
+      "panel_rank": 16,
+      "genejepa_index": 30243,
+      "gene_symbol": "LINC-PINT",
+      "ensembl_id": "ENSG00000231721",
+      "token_id": 30246
+    },
+    {
+      "panel_rank": 17,
+      "genejepa_index": 17691,
+      "gene_symbol": "ASPH",
+      "ensembl_id": "ENSG00000198363",
+      "token_id": 17694
+    },
+    {
+      "panel_rank": 18,
+      "genejepa_index": 7414,
+      "gene_symbol": "RPS6",
+      "ensembl_id": "ENSG00000137154",
+      "token_id": 7417
+    },
+    {
+      "panel_rank": 19,
+      "genejepa_index": 8594,
+      "gene_symbol": "GOLGA4",
+      "ensembl_id": "ENSG00000144674",
+      "token_id": 8597
+    }
+  ],
+  "recomputed_from_phase1_cells": false
+}

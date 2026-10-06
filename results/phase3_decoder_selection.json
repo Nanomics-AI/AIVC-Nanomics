@@ -1,0 +1,55 @@
+{
+  "schema": "phase3_decoder_selection_v1",
+  "created_at_utc": "2026-10-05T00:53:35.735968+00:00",
+  "status": "pass",
+  "validation_conditions": 500,
+  "sampling_epoch": 0,
+  "shared_mathematically_valid_pearson_n": 500,
+  "true_delta_zero_variance_n": 0,
+  "d1_model_induced_undefined_pearson_n": 0,
+  "d2_model_induced_undefined_pearson_n": 0,
+  "nonfinite_prediction_n": 0,
+  "fallback_triggered": false,
+  "selection_metric_actually_used": "higher validation macro Pearson delta on shared valid conditions; lower MAE tie-break",
+  "metrics": {
+    "d1": {
+      "macro_mae_all_500": 0.15642091631889343,
+      "macro_mse_all_500": 0.04736946150660515,
+      "macro_pearson_shared_mathematically_valid": 0.5940034673444173,
+      "finite_pearson_n": 500,
+      "model_induced_undefined_pearson_n": 0,
+      "prediction_signed": true,
+      "membership_sha256": "8b9ff7e16bc92e7001820e06b3b67c8a3878c5bd972c951e71b5c9463f86865c"
+    },
+    "d2": {
+      "macro_mae_all_500": 0.13717548549175262,
+      "macro_mse_all_500": 0.03640076145529747,
+      "macro_pearson_shared_mathematically_valid": 0.6979856049086752,
+      "finite_pearson_n": 500,
+      "model_induced_undefined_pearson_n": 0,
+      "prediction_signed": true,
+      "membership_sha256": "8b9ff7e16bc92e7001820e06b3b67c8a3878c5bd972c951e71b5c9463f86865c"
+    }
+  },
+  "selected_architecture": "d2",
+  "test_used_for_selection": false,
+  "protocol": {
+    "path": "results/phase3_set_decoder_training_protocol.json",
+    "size_bytes": 5561,
+    "sha256": "aa74724dbbd3f1a10d51022f4d76929d3ee8165d70c54245aad1d7bad066f180"
+  },
+  "checkpoints": {
+    "d1": {
+      "path": "results/phase3_d1_checkpoints/best.pt",
+      "size_bytes": 20470023,
+      "sha256": "4b993b67afc2e3c134dd4df9f426357f5dce4f903cd6285015f4736ff64842c6"
+    },
+    "d2": {
+      "path": "results/phase3_d2_checkpoints/best.pt",
+      "size_bytes": 22610791,
+      "sha256": "d69fcbc891155fd436e061a0c232b26ad3ad1e4a5b145e1e8b825fd2bfed1cd1"
+    }
+  },
+  "phase3_complete": false,
+  "phase4_started": false
+}

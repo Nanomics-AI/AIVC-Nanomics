@@ -1,0 +1,64 @@
+{
+  "schema": "phase2_stav2_cache_plan_v1",
+  "created_at_utc": "2026-09-28T08:17:51.371319+00:00",
+  "status": "pass",
+  "policy": "treated cap=512 per selected condition + cap=512 per unique used control pool",
+  "total_unique_cells": 2547484,
+  "treated_cells": 2511697,
+  "control_cells": 35787,
+  "embedding_shape": [
+    2547484,
+    768
+  ],
+  "embedding_dtype": "float32",
+  "embedding_payload_GiB": 7.288410186767578,
+  "scatter_key": "phase2_cell_index stored as embedding_index",
+  "stable_locator_columns": [
+    "shard_path",
+    "row_group_index",
+    "row_index_in_row_group",
+    "row_index_in_shard"
+  ],
+  "worker_partition": [
+    {
+      "worker_id": 0,
+      "rows": 1274276,
+      "source_shards": 1694,
+      "plan_sha256": "5b54d28f769fa069f518333487d89ba4ada851ae8584ab578bfc746ff5d670a9",
+      "plan_size_bytes": 26353596
+    },
+    {
+      "worker_id": 1,
+      "rows": 1273208,
+      "source_shards": 1694,
+      "plan_sha256": "02b3de9f91a5626da642f6e2ed4a46e45ffe08829b27e284db429bb1a4fe9c37",
+      "plan_size_bytes": 26335110
+    }
+  ],
+  "worker_overlap": 0,
+  "worker_union_cells": 2547484,
+  "duplicate_physical_cells": 0,
+  "missing_locators": 0,
+  "condition_index": {
+    "path": "results/phase2_stav2_conditions.csv",
+    "sha256": "824f8dff2f55d1e99d87c95326818d1b67273e81f1df6c455eba467b64eb6c67",
+    "size_bytes": 3379322
+  },
+  "control_pool_index": {
+    "path": "results/phase2_stav2_control_pools.csv",
+    "sha256": "846b37865bb4a02a31bea697cd238b54c1b28f39485119b88efde847216e5922",
+    "size_bytes": 12544
+  },
+  "source_worker_plans": [
+    {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_worker0_plan.parquet",
+      "sha256": "e7325fd9c14f57321d594a5279a07a4b41bc65028ff61bbfcdf3306b3a96fec3",
+      "size_bytes": 229204955
+    },
+    {
+      "path": "results/tahoe_experiment1_cache_cap512_all_dmso_worker1_plan.parquet",
+      "sha256": "5cdc74eaafc181b6a4dae48ff8f1144de274a1c8b7ae29e03df9eb9fc869f17f",
+      "size_bytes": 228496719
+    }
+  ]
+}

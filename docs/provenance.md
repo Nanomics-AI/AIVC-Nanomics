@@ -1,59 +1,130 @@
-# Core pipeline provenance
+# Provenance and external runtime artifacts
 
-The runtime artifacts below are required in the original experiment workspace
-but are intentionally not stored in Git.
+This repository contains source and lightweight frozen contracts. It does not
+contain raw Tahoe data, model weights, locator plans, caches, logs, or generated
+evaluation outputs.
 
-## External data and preprocessing
+## Branch roles
 
-| Artifact | Expected local path | SHA-256 / note |
-| --- | --- | --- |
-| Tahoe-100M parquet shards | `hf_data_cache/data/data/` | External dataset; not versioned here |
-| Tahoe gene metadata | `hf_data_cache/metadata/metadata/gene_metadata.parquet` | `d6104d1ca570d94832be0d27ffe8b7e4e54cfd366c9080239219f9c406eb751c` |
-| GeneJEPA global statistics | `hf_data_cache/global_stats.json` | `c2f086a4560abc096511b7c33c4f294db87ba58e47bcee41cb1a952757691461` |
+| branch | role |
+|---|---|
+| `main` | current formal Author GeneJEPA → ST-A v2 → D2 pipeline |
+| `legacy-main-20261006` | immutable snapshot of the previous formal main |
+| `project-code-audit-20260923` | broader historical development snapshot |
 
-## Frozen models and embedding cache
+## Tahoe data and preprocessing
 
-| Artifact | Expected local path | SHA-256 |
-| --- | --- | --- |
-| Our GeneJEPA Epoch25 checkpoint | `checkpoints/genejepa_quarter_d12_h6_700k_e30_seed42_run1/scjepa-epoch=25-val_loss=0.179.ckpt` | `6c6e89bc6d9349519250908cc4d4742c6319007f4f147328338952fa6cb98e9b` |
-| Merged Epoch25 embedding cache | `results/tahoe_experiment1_cache_cap512_all_dmso_embeddings.npy` | `f31a7b6fc6b665656c398cbb10ed3591b86fd7bb64dd2b26a3cc0b759f3f202b` |
-| ST-A best checkpoint | `results/tahoe_experiment1_st_formal_checkpoints_v2/st-a/best.pt` | `9bd0f2719f42dac4fa5a9aabc4fd2bb242a442fb652ae90a8ee52fa54ca03652` |
-| Decoder v1 best checkpoint | `results/genejepa_decoder_v1_checkpoints/best.pt` | `29772ddf20bc36dde956fcd0befecbc0b71aaf4f1a8dd07fdf7195c5e6b590d0` |
+Tahoe single-cell parquet is an external dataset. The formal local layout is
+rooted at `hf_data_cache/`; it is intentionally ignored by Git.
 
-The merged cache has shape `[30,839,089, 768]`, dtype `float32`, and row
-`i` is the cell with global `embedding_index == i`.
+| local path | purpose | SHA-256 |
+|---|---|---|
+| `hf_data_cache/local_file_manifest.json` | physical shard inventory | `a36d71aa7f4a8cee6aa3df9b7bcb96f7008e66622ed921255c841e297500900e` |
+| `hf_data_cache/metadata/metadata/gene_metadata.parquet` | gene-token metadata | `d6104d1ca570d94832be0d27ffe8b7e4e54cfd366c9080239219f9c406eb751c` |
+| `hf_data_cache/global_stats.json` | frozen Tahoe global mean/std | `c2f086a4560abc096511b7c33c4f294db87ba58e47bcee41cb1a952757691461` |
 
-## Frozen runtime manifests
+Additional local condition data required by the exact runners is not committed:
 
-These generated tables are too large or too operational for Git, but the
-cache consumer and training code resolve them under `results/`.
+| local path | purpose | SHA-256 |
+|---|---|---|
+| `results/phase1_top20_subset_conditions.csv` | frozen Phase I condition subset | `071cb44ab1dc6a234bce57b6f74d9b18b8cfeedc6efe8a219018ec0aa24890eb` |
+| `results/phase2_stav2_conditions.csv` | Phase II/III condition table and latent ranges | `824f8dff2f55d1e99d87c95326818d1b67273e81f1df6c455eba467b64eb6c67` |
+| `results/phase2_stav2_control_pools.csv` | matched DMSO pools and latent ranges | `846b37865bb4a02a31bea697cd238b54c1b28f39485119b88efde847216e5922` |
+| `results/tahoe_experiment1_cache_cap512_all_dmso_condition_index.csv` | upstream Experiment 1 treated condition index used to build Phase II | `80dc693034399b21b8f98add57927ad52e647872fd472be2f91147f00a073ff1` |
+| `results/tahoe_experiment1_cache_cap512_all_dmso_control_pool_index.csv` | upstream Experiment 1 DMSO pool index used to build Phase II | `57658c1aade95d27acb69a7fd65a593273690073d674bd9c2081dc22ecf8d5be` |
+| `results/phase2_author_genejepa_cache/cache_worker{0,1}_plan.parquet` | stable physical-cell locator plans | recorded in `results/phase2_stav2_cache_plan.json` |
+| `results/phase1_author_manual_mean_parity.json` | required manual-mean parity gate for formal Author extraction | `308765bc97a2fc2cad2156b56ad4241fe13e890f653d23b9f468a3f0e49f2763` |
 
-| Artifact | SHA-256 |
-| --- | --- |
-| `tahoe_set_to_set_pairs.csv` | `08dfa518496039cf9c551048240dc222e94118b82f40dab4631305ec9469f162` |
-| `tahoe_experiment1_condition_split_manifest.csv` | `fb263e74522c9c2a00ca150aca68d98c3a92ff7a221048dafc9cb58e83e8d30a` |
-| `tahoe_experiment1_edge_split_manifest.csv` | `6f32fedbc064ef5711b644746199810370b3ffe69a1e45978361971840554d04` |
-| `tahoe_experiment1_drug_vocabulary.csv` | `5ebc31c5d22f43fa582aaddbe23e85769366a74133151941abd597c4d660ab5a` |
-| `tahoe_experiment1_cache_cap512_all_dmso_condition_index.csv` | `80dc693034399b21b8f98add57927ad52e647872fd472be2f91147f00a073ff1` |
-| `tahoe_experiment1_cache_cap512_all_dmso_control_pool_index.csv` | `57658c1aade95d27acb69a7fd65a593273690073d674bd9c2081dc22ecf8d5be` |
-| `tahoe_experiment1_cache_cap512_all_dmso_summary.json` | `4d76728566d90f707f74a1b6493d7db65ae752d5ebb49211bb3ab4dba2506d1a` |
+## Author GeneJEPA
 
-## Frozen lightweight artifacts stored in Git
+- Upstream: <https://github.com/BiostateAI/GeneJEPA>
+- Pinned upstream commit:
+  `a2f4d7218b17f2f52cc5f1cc94420c8ef1ae3265`
+- Expected source checkout: `external/author_genejepa_code/`
+- Checkpoint: `external/author_genejepa/genejepa-epoch=49.ckpt`
+- Checkpoint SHA-256:
+  `5db5c5750aeecc09955fefcaf143b349d9d8e1e877fe4a1073400ba66ef56f05`
+- Runtime branch: frozen Epoch49 `teacher_encoder.ema_model`
+- Captured representation: `final_norm [B,512,768]`
+- Persisted representation: `mean(dim=1)`, signed float32 `[B,768]`
 
-| Artifact | Path | SHA-256 |
-| --- | --- | --- |
-| Decoder v1 gene panel | `results/genejepa_decoder_v1_gene_panel.csv` | `c4f79cfb0a37ec278d04c3f0045fa568872961445a9f251fff37dfa3d38d790e` |
-| Decoder v1 contract | `results/genejepa_decoder_v1_contract.json` | See the file itself and Git history |
-| ST-A perturbation featurization | `results/tahoe_experiment1_perturbation_featurization.json` | 379 drug dimensions plus one train-standardized log-dose dimension |
-| ST-A training protocol | `results/tahoe_experiment1_st_a_training_protocol.json` | Generated by the ST-A-only runner's `prepare` command |
+Formal merged Phase II embedding cache:
 
-## STATE dependency
+| local path | shape | SHA-256 |
+|---|---:|---|
+| `results/phase2_author_genejepa_embeddings.npy` | `[2,547,484,768]` | `4dc190823d0489a6c6f51e45e0d326f336b4337e1196647294f5b89b3cd23beb` |
 
-- upstream: `https://github.com/ArcInstitute/state`
-- base commit: `f182478607c75f6b8f6256409cc0b4b902f991e9` (`arc-state` 0.11.3)
-- project patch: `patches/state_genejepa_st_a_compat.patch`
-- purpose: allow `final_activation="identity"` so signed GeneJEPA coordinates
-  are not clipped by the upstream final ReLU
+Its alignment/provenance manifest is committed as
+`results/phase2_author_genejepa_embedding_manifest.json`; the cache is not.
 
-GeneJEPA and STATE use separate Python environments. Applying STATE's
-dependencies must not upgrade the GeneJEPA environment.
+## STATE and ST-A v2
+
+- Upstream: <https://github.com/ArcInstitute/state>
+- Pinned upstream commit:
+  `f182478607c75f6b8f6256409cc0b4b902f991e9`
+- Package version: `arc-state==0.11.3`
+- Patch: `patches/state_genejepa_st_a_compat.patch`
+- Patch SHA-256:
+  `c672fcdbca6cabf3415c75871e6dbb1dc8016af9e38e612fbc55182ff03ecd17`
+- Patch purpose: explicit identity final activation for signed latent output
+- ST-A v2 semantics: absolute treated latent prediction, not residual prediction
+
+Formal checkpoint and protocol:
+
+| local path | purpose | SHA-256 |
+|---|---|---|
+| `results/phase2_stav2_checkpoints/best.pt` | ST-A v2 best checkpoint | `1c29e29fe3e2d9853061d7927596038bad6ada0e749ea996c1079dafe0f519d4` |
+| `results/phase2_stav2_training_protocol.json` | frozen training contract | `8386570c21ccbfa3211274f54d84fdc39f5eba5202abfd92ee81fc7dd685f0c4` |
+
+`run_phase2_stav2.py train` also checks locally generated architecture-audit
+and exact-config smoke JSONs. These are regenerated by its `prepare` and
+`smoke` commands and are not committed as source inputs.
+
+## D2 set-level delta decoder
+
+- Formal model source: `perturbation_scripts/phase3_set_decoder_model.py`
+- Selected variant: `d2`
+- Selection used validation only; test data was not used for selection.
+
+| local path | purpose | SHA-256 |
+|---|---|---|
+| `results/phase3_d2_checkpoints/best.pt` | selected D2 checkpoint | `d69fcbc891155fd436e061a0c232b26ad3ad1e4a5b145e1e8b825fd2bfed1cd1` |
+| `results/phase3_set_decoder_training_protocol.json` | frozen D1/D2 training contract | `aa74724dbbd3f1a10d51022f4d76929d3ee8165d70c54245aad1d7bad066f180` |
+| `results/phase3_decoder_selection.json` | validation-only D2 selection | `0c2b8295bd6609f2f6d275affcd874d4af6d8e40ef98fe7a390108e1903456b4` |
+
+`run_phase3_set_decoder.py train` similarly consumes locally generated
+architecture-audit and combined-smoke artifacts. Checkpoint-adjacent training
+result JSONs used by the formal evaluator are generated run metadata and are
+not committed.
+
+The exact formal evaluator also loads comparison references. They remain
+external artifacts, not current selected models:
+
+| local path | role | SHA-256 |
+|---|---|---|
+| `results/phase3_d1_checkpoints/best.pt` | formal D1 comparison | `4b993b67afc2e3c134dd4df9f426357f5dce4f903cd6285015f4736ff64842c6` |
+| `results/phase1_author_top20_decoder/best.pt` | frozen Old Decoder same-evaluator reference | `cdbea046e350f7ba781b5bba79aea983f6b48a89ac0fb6399c964220bbe21a2b` |
+
+## Top20 expression target
+
+| committed file | purpose | SHA-256 |
+|---|---|---|
+| `results/phase1_top20_gene_panel.csv` | frozen Top20 order | `7dbcaf163164bcc0da86527713e744a2d4533ad5a15b160d96799ef63a16d7ba` |
+| `results/phase1_top20_gene_panel.json` | panel provenance | `6695640bba3af3b94b6e13b03d0df8d7820e5ecbb33eeb5647a2baba5b4e1254` |
+| `results/tahoe_experiment1_drug_vocabulary.csv` | stable 379-drug indexing | `5ebc31c5d22f43fa582aaddbe23e85769366a74133151941abd597c4d660ab5a` |
+| `results/phase2_stav2_dose_normalization.json` | frozen dose transform | `b0757ad651609a2d2ab51c891b8a6e435bb53d028ef9551d4360a338241678fd` |
+
+Formal expression cache:
+
+| local path | shape | SHA-256 |
+|---|---:|---|
+| `results/phase3_top20_expression_cache.npy` | `[2,547,484,20]` | `b429594d9f1a66108a3c2f66895533698ba7bb837b60eb328302d5c2304d7fe7` |
+
+The committed `results/phase3_top20_expression_cache_manifest.json` records
+row alignment and construction provenance. The cache itself is excluded.
+
+## Source integrity
+
+`docs/source_sha256.md` records the research-workspace source path and SHA-256
+for every retained scientific Python file. Each GitHub copy was verified to be
+byte-for-byte identical before commit.

@@ -1,175 +1,236 @@
 # Technical review guide
 
-This document is a code-reading route for the core AIVC implementation. It is
-not a performance report.
-
-## End-to-end data flow
+## 1. Current pipeline
 
 ```text
-Tahoe raw sparse expression
-        ↓
-sentinel removal → gene mapping → log1p → frozen global normalization
-        ↓
-our GeneJEPA Epoch25 EMA Teacher
-        ↓
-one signed 768-dimensional embedding per control cell
-        ↓
-ST-A + drug one-hot + standardized log-dose
-        ↓
-signed 768-dimensional predicted treated-cell embeddings
-        ↓
-Decoder v1
-        ↓
-predicted 5,000-gene expression vector in log1p(CP10K) space
+Tahoe physical cells
+  → Author GeneJEPA Epoch49 EMA Teacher
+  → final_norm latent tokens [B,512,768]
+  → mean over the 512 tokens
+  → cell latent [B,768]
+  → ST-A v2(control set, drug, dose)
+  → predicted treated latent set [B,256,768]
+  → D2(control set, treated set)
+  → signed Top20 expression delta [B,20]
 ```
 
-## Step 1 — GeneJEPA configuration
+This repository keeps the exact formal Phase II/III source files. It does not
+contain a cleaner reimplementation of the pipeline.
 
-Start with [`genejepa/configs.py`](../genejepa/configs.py).
+## 2. Suggested reading order
 
-The formal model configuration is:
+1. **Author GeneJEPA integration**
+   - `perturbation_scripts/phase2_author_genejepa.py`
+   - `perturbation_scripts/phase1_author_genejepa.py`
+   - `perturbation_scripts/author_genejepa_epoch49_hd100_cache.py`
+2. **Tahoe preprocessing and physical-cell cache**
+   - `perturbation_scripts/phase2_stav2_data.py`
+   - `perturbation_scripts/extract_tahoe_experiment1_full_cache_worker.py`
+   - `perturbation_scripts/extract_tahoe_latent_audit_embeddings.py`
+   - `genejepa/configs.py`
+   - `genejepa/data.py`
+3. **ST-A v2 dataset and deterministic set sampling**
+   - `perturbation_scripts/phase2_stav2_dataset.py`
+   - `perturbation_scripts/tahoe_experiment1_latent_data.py`
+4. **ST-A v2 model**
+   - `perturbation_scripts/phase2_stav2_model.py`
+5. **ST-A v2 formal runner**
+   - `perturbation_scripts/run_phase2_stav2.py`
+   - current formal subcommand: `train`
+6. **D2 data and target**
+   - `perturbation_scripts/phase3_set_decoder_data.py`
+   - `perturbation_scripts/tahoe_decoder_v1_data.py`
+7. **D2 model**
+   - `perturbation_scripts/phase3_set_decoder_model.py`
+   - current selected variant: `d2`
+8. **D2 formal runner**
+   - `perturbation_scripts/run_phase3_set_decoder.py`
+   - current formal command: `train --variant d2`
+9. **Formal full-pipeline evaluator**
+   - `perturbation_scripts/evaluate_phase3_set_decoder.py`
 
-- model width `d = 768`;
-- `512` learned latent tokens;
-- `12` latent transformer blocks;
-- `6` attention heads;
-- an EMA Teacher updated from the student during training.
+## 3. Author GeneJEPA representation
 
-The same file also holds the training, data-volume, checkpoint, and random-seed
-configuration used by [`genejepa/train.py`](../genejepa/train.py).
+The representation model is the external
+[BiostateAI/GeneJEPA](https://github.com/BiostateAI/GeneJEPA) source pinned at
+commit `a2f4d7218b17f2f52cc5f1cc94420c8ef1ae3265`. It is not presented as an
+AIVC-authored GeneJEPA implementation.
 
-## Step 2 — Tokenizer and encoder
-
-Read these files next:
-
-1. [`genejepa/tokenizer.py`](../genejepa/tokenizer.py)
-2. [`genejepa/models.py`](../genejepa/models.py)
-
-The tokenizer combines a mapped gene identity with its continuous normalized
-expression value. The encoder cross-attends 512 learned latent queries to the
-variable-length cell tokens, processes the latent array through 12 transformer
-blocks, applies `final_norm`, and mean-pools the 512 internal tokens.
-
-The public embedding returned by `get_embedding()` is therefore `[B, 768]`.
-The 512 tokens are internal model state; the cache does not store a
-`[512, 768]` array per cell.
-
-## Step 3 — Tahoe preprocessing
-
-Read [`genejepa/data.py`](../genejepa/data.py), especially
-`Tahoe100MDataset.__iter__` and `Tahoe100MDataModule._collate_fn`.
-
-For each Tahoe cell, the production path performs exactly:
+The formal checkpoint is the Epoch49 EMA Teacher. The author architecture has
+24 transformer blocks, 12 attention heads, hidden dimension 768, and 512
+latent tokens. The extraction path captures:
 
 ```text
-raw sparse counts
-→ remove the leading sentinel entry when present
-→ map Tahoe gene token IDs to the GeneJEPA vocabulary
-→ log1p(count)
-→ (value - global_mean) / (global_std + 1e-6)
+EMA Teacher final_norm: [B,512,768]
+mean(dim=1):             [B,768]
 ```
 
-There is no CP10K normalization in the GeneJEPA input path. CP10K is used only
-for the Decoder target described below.
+Only the signed float32 `[B,768]` cell embedding is persisted. The 512 token
+vectors are not stored. Tahoe preprocessing is performed once: sentinel
+handling, gene-token mapping, `log1p`, and the frozen Tahoe global mean/std
+normalization. No centering, whitening, L2 normalization, or rectification is
+applied to the resulting latent.
 
-## Step 4 — GeneJEPA training and inference
+## 4. Physical-cell pools and sampling
 
-Read [`genejepa/train.py`](../genejepa/train.py) and
-[`genejepa/callbacks.py`](../genejepa/callbacks.py).
+Each eligible condition and matched control pool is capped at 512 cached
+physical cells. A training/evaluation set contains 256 cells. The shared
+sampler in `tahoe_experiment1_latent_data.py` derives a deterministic seed from
+`seed + epoch + pair_id + side` and samples without replacement inside each
+set. Different epochs may overlap. Training changes the dataset epoch;
+validation and the five formal test repeats use their frozen epochs.
 
-Training maintains a student encoder and an exponential-moving-average Teacher.
-Formal embedding extraction calls `get_embedding(..., use_teacher=True)` on the
-frozen Epoch25 checkpoint. The shared production helper is
-[`perturbation_scripts/tahoe_genejepa_embedding.py`](../perturbation_scripts/tahoe_genejepa_embedding.py).
+The embedding arrays are memory-mapped directly. `phase2_cell_index` is the
+row-alignment contract across locator plans, Author embeddings, and Phase III
+Top20 expression targets.
 
-## Step 5 — Embedding cache
+## 5. ST-A v2
 
-Read the cache path in this order:
-
-1. [`prepare_tahoe_experiment1_manifests.py`](../perturbation_scripts/prepare_tahoe_experiment1_manifests.py) — freeze condition splits, drug vocabulary, and dose transform.
-2. [`plan_tahoe_experiment1_full_cache.py`](../perturbation_scripts/plan_tahoe_experiment1_full_cache.py) — create deterministic stable cell locators and worker partitions.
-3. [`tahoe_genejepa_embedding.py`](../perturbation_scripts/tahoe_genejepa_embedding.py) — reuse the GeneJEPA preprocessing and frozen EMA Teacher.
-4. [`extract_tahoe_experiment1_full_cache_worker.py`](../perturbation_scripts/extract_tahoe_experiment1_full_cache_worker.py) — resumable independent extraction workers.
-5. [`merge_tahoe_experiment1_full_cache.py`](../perturbation_scripts/merge_tahoe_experiment1_full_cache.py) — scatter worker parts into global `embedding_index` order.
-6. [`tahoe_experiment1_latent_data.py`](../perturbation_scripts/tahoe_experiment1_latent_data.py) — memory-map the merged cache and sample cell sets.
-
-Each physical cell is embedded once. The merged payload is a float32 array
-`[N, 768]`, and cache row `i` corresponds to global `embedding_index == i`.
-The cache consumer does not apply centering, whitening, L2 normalization, or
-expression preprocessing to the stored latent.
-
-## Step 6 — ST-A
-
-Read:
-
-1. [`tahoe_experiment1_latent_data.py`](../perturbation_scripts/tahoe_experiment1_latent_data.py)
-2. [`run_tahoe_experiment1_st_a.py`](../perturbation_scripts/run_tahoe_experiment1_st_a.py)
-3. [`patches/state_genejepa_st_a_compat.patch`](../patches/state_genejepa_st_a_compat.patch)
-
-The DataLoader supplies:
+Input:
 
 ```text
-ctrl_cell_emb  [B, 256, 768]
-pert_cell_emb  [B, 256, 768]   # training target
-pert_emb       [B, 256, 380]
+control latent set: [B,256,768]
+drug ID:            [B]
+dose:               [B]
 ```
 
-The 380 perturbation features are a 379-dimensional drug one-hot vector and one
-standardized `log10(dose_uM)` value. The same vector is repeated across the 256
-cells in a set.
-
-ST-A uses the upstream STATE basal encoder, perturbation encoder, bidirectional
-Llama backbone, and `project_out`. It predicts the absolute treated latent:
+Drug conditioning is a learned `Embedding(379,768)`. Dose is:
 
 ```text
-Zpred = project_out(transformer_hidden)
+dose_scaled = log1p(dose_uM) / log1p(5)
 ```
 
-Output is `[B, 256, 768]`. The final activation is identity because GeneJEPA
-latents are signed. Training uses set-level Energy distance against the real
-treated-cell set.
+The model conditions every control cell as:
 
-## Step 7 — Decoder v1
+```text
+conditioned_control = control_latent
+                    + drug_embedding(drug_id) * dose_scaled
+```
 
-Read:
+The conditioned set passes through the official STATE body and the signed
+output projection. The output is an **absolute treated latent set** of shape
+`[B,256,768]`; ST-A v2 does not predict residuals. The training objective is
+Energy distance (`geomloss.SamplesLoss(loss="energy", blur=0.05)`). The STATE
+compatibility patch only enables identity final activation for signed latents.
 
-1. [`tahoe_decoder_v1_data.py`](../perturbation_scripts/tahoe_decoder_v1_data.py)
-2. [`run_genejepa_decoder_v1.py`](../perturbation_scripts/run_genejepa_decoder_v1.py)
-3. [`results/genejepa_decoder_v1_contract.json`](../results/genejepa_decoder_v1_contract.json)
+Formal training entry:
 
-The Decoder input is one signed 768-dimensional latent. Its supervised target is
-a frozen 5,000-gene vector constructed from the same physical cell:
+```text
+perturbation_scripts/run_phase2_stav2.py train
+```
+
+## 6. D2 set-level delta decoder
+
+D2 is not a single-cell absolute-expression decoder. It consumes two latent
+sets:
+
+```text
+control set: [B,256,768]
+treated set: [B,256,768]
+```
+
+The same set encoder is applied to both sides:
+
+```text
+Linear 768→256
+TransformerEncoder ×2
+  d_model=256
+  nhead=8
+  feed-forward=1024
+  dropout=0
+  norm_first=True
+  no positional encoding
+scalar attention pooling
+```
+
+This gives `h_control` and `h_treated`. The signed prediction is:
+
+```text
+latent_delta = h_treated - h_control
+readout: 256→256→128→20
+output: signed Top20 delta [B,20]
+```
+
+`phase3_set_decoder_model.py` retains both D1 and D2 because it is the exact
+formal source used in the validation-only architecture comparison. D2 is the
+current selected route. No D2-only rewrite was made.
+
+Formal D2 training entry:
+
+```text
+perturbation_scripts/run_phase3_set_decoder.py train --variant d2
+```
+
+## 7. Top20 target
+
+The Phase III target reuses helpers from `tahoe_decoder_v1_data.py`:
 
 ```text
 all mapped raw gene counts
-→ compute the full mapped-gene library size
-→ CP10K normalization
-→ log1p
-→ select the frozen 5,000-gene panel
+  → library size across all mapped genes
+  → CP10K
+  → log1p
+  → select the frozen Top20 panel
 ```
 
-The 5,000-gene panel defines which targets are returned by the Decoder dataset;
-it does not define the denominator used for CP10K normalization.
-
-The architecture is:
+The Top20 panel does **not** define the CP10K denominator. The condition-level
+ground truth is:
 
 ```text
-768 → 1024 → 1024 → 512 → 5000
+GT delta = mean(real treated Top20) - mean(matched real control Top20)
 ```
 
-The hidden stages use LayerNorm, GELU, and dropout `0.1`; the final output uses
-Softplus. The frozen panel is stored in
-[`results/genejepa_decoder_v1_gene_panel.csv`](../results/genejepa_decoder_v1_gene_panel.csv).
+## 8. D2 training versus full-pipeline inference
 
-## Step 8 — Reconstructing the complete path
+During D2 training, ST-A is not in the loop:
 
-| Arrow | Implementation |
-| --- | --- |
-| sparse Tahoe cell → model-ready tokens | `genejepa/data.py` |
-| tokens → 768-d cell embedding | `genejepa/tokenizer.py`, `genejepa/models.py`, `tahoe_genejepa_embedding.py` |
-| physical cells → indexed embedding cache | `plan_tahoe_experiment1_full_cache.py`, extraction worker, merge script |
-| control embedding set + drug/dose → predicted treated embedding set | `tahoe_experiment1_latent_data.py`, `run_tahoe_experiment1_st_a.py`, STATE patch |
-| predicted treated embedding → predicted expression | `run_genejepa_decoder_v1.py` |
+```text
+real control latent set + real treated latent set → D2 → Top20 delta
+```
 
-Data, checkpoints, and generated cache payloads are external to Git. See
-[`provenance.md`](provenance.md) for exact expected paths and hashes.
+The formal full pipeline reconnects ST-A at inference time:
+
+```text
+real control + drug/dose
+  → ST-A v2
+  → predicted treated latent set
+
+real control + predicted treated
+  → D2
+  → Top20 delta
+```
+
+The formal evaluator is:
+
+```text
+perturbation_scripts/evaluate_phase3_set_decoder.py evaluate
+```
+
+It also computes D1 and a frozen Old Decoder reference under the same evaluator
+contract. `run_phase1_top20_decoder.py` is retained only because the exact
+formal evaluator imports its `build_decoder()` reference. The Old Decoder is
+not the current decoder route.
+
+## 9. Historical filenames retained for provenance
+
+Some required files retain development-stage names such as `phase1`, `hd100`,
+`audit`, `b0`, or `decoder_v1`. These filenames reflect development history.
+They remain because the exact formal Phase II/III source imports functions from
+them. They are intentionally unchanged so the reviewed GitHub source matches
+the code used in the experiments.
+
+Two retained files also contain dormant, command-specific ARC7 imports from
+their earlier roles. Those branches are not called by the current Phase II/III
+entry points and the independent ARC7 scripts are intentionally excluded. The
+formal Author path uses the loader/configuration functions from
+`author_genejepa_epoch49_hd100_cache.py`; the formal evaluator uses only
+`build_decoder()` from `run_phase1_top20_decoder.py`. External
+`genejepa.train` imports are resolved from the pinned Author GeneJEPA checkout
+after `register_author_config_aliases()` changes the package source.
+
+## 10. Artifact boundary
+
+GitHub contains source and lightweight frozen contracts only. Tahoe parquet,
+condition tables, checkpoint weights, physical-cell locator plans, embedding
+caches, expression caches, logs, and generated evaluation results are external
+runtime artifacts. Their paths and hashes are listed in `docs/provenance.md`.

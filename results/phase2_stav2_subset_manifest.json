@@ -1,0 +1,294 @@
+{
+  "schema": "phase2_stav2_subset_manifest_v1",
+  "created_at_utc": "2026-09-28T08:17:54.429563+00:00",
+  "status": "pass",
+  "task": {
+    "path": "/mnt/c/SH/AIVC/Phase II.md",
+    "sha256": "0da488785317b391296b08557c9c39e82307cb9335dd9039eb84d239152e75e9",
+    "size_bytes": 35990,
+    "expected_sha256": "0da488785317b391296b08557c9c39e82307cb9335dd9039eb84d239152e75e9",
+    "phase": "Task 2 / Phase II"
+  },
+  "selection": {
+    "seed": 42,
+    "algorithm": "coverage-first balanced cell-line/dose strata with seed42 SHA256 tie-break v1",
+    "source_split_reused": true,
+    "new_split_generated": false,
+    "target_quotas": {
+      "train": 4000,
+      "val": 500,
+      "test": 500
+    },
+    "phase1_frozen_cell_lines": [
+      "CVCL_0179",
+      "CVCL_0371",
+      "CVCL_1055",
+      "CVCL_1239",
+      "CVCL_1547"
+    ],
+    "selected_cell_lines": [
+      "CVCL_0179",
+      "CVCL_0371",
+      "CVCL_1055",
+      "CVCL_1239",
+      "CVCL_1547"
+    ],
+    "selected_cell_lines_equal_phase1_frozen_five": true,
+    "eligible_within_five_cell_lines": 6332,
+    "excluded_unseen_val_test": [
+      {
+        "pair_id": "pair_05071",
+        "split": "val",
+        "cell_line_id": "CVCL_0179",
+        "drug": "Sonidegib",
+        "dose_uM": 0.5,
+        "plate": "plate2"
+      },
+      {
+        "pair_id": "pair_05898",
+        "split": "val",
+        "cell_line_id": "CVCL_0371",
+        "drug": "Sonidegib",
+        "dose_uM": 0.5,
+        "plate": "plate2"
+      },
+      {
+        "pair_id": "pair_06632",
+        "split": "test",
+        "cell_line_id": "CVCL_1055",
+        "drug": "Sonidegib",
+        "dose_uM": 0.5,
+        "plate": "plate2"
+      },
+      {
+        "pair_id": "pair_07275",
+        "split": "val",
+        "cell_line_id": "CVCL_1239",
+        "drug": "Sonidegib",
+        "dose_uM": 0.5,
+        "plate": "plate2"
+      },
+      {
+        "pair_id": "pair_07914",
+        "split": "test",
+        "cell_line_id": "CVCL_1547",
+        "drug": "Sonidegib",
+        "dose_uM": 0.5,
+        "plate": "plate2"
+      },
+      {
+        "pair_id": "pair_09652",
+        "split": "val",
+        "cell_line_id": "CVCL_0179",
+        "drug": "Sonidegib",
+        "dose_uM": 5.0,
+        "plate": "plate3"
+      },
+      {
+        "pair_id": "pair_10480",
+        "split": "val",
+        "cell_line_id": "CVCL_0371",
+        "drug": "Sonidegib",
+        "dose_uM": 5.0,
+        "plate": "plate3"
+      },
+      {
+        "pair_id": "pair_11216",
+        "split": "test",
+        "cell_line_id": "CVCL_1055",
+        "drug": "Sonidegib",
+        "dose_uM": 5.0,
+        "plate": "plate3"
+      },
+      {
+        "pair_id": "pair_12504",
+        "split": "test",
+        "cell_line_id": "CVCL_1547",
+        "drug": "Sonidegib",
+        "dose_uM": 5.0,
+        "plate": "plate3"
+      },
+      {
+        "pair_id": "pair_56518",
+        "split": "val",
+        "cell_line_id": "CVCL_0179",
+        "drug": "Sonidegib",
+        "dose_uM": 0.05,
+        "plate": "plate13"
+      },
+      {
+        "pair_id": "pair_57355",
+        "split": "val",
+        "cell_line_id": "CVCL_0371",
+        "drug": "Sonidegib",
+        "dose_uM": 0.05,
+        "plate": "plate13"
+      },
+      {
+        "pair_id": "pair_58099",
+        "split": "test",
+        "cell_line_id": "CVCL_1055",
+        "drug": "Sonidegib",
+        "dose_uM": 0.05,
+        "plate": "plate13"
+      },
+      {
+        "pair_id": "pair_58750",
+        "split": "val",
+        "cell_line_id": "CVCL_1239",
+        "drug": "Sonidegib",
+        "dose_uM": 0.05,
+        "plate": "plate13"
+      },
+      {
+        "pair_id": "pair_59401",
+        "split": "test",
+        "cell_line_id": "CVCL_1547",
+        "drug": "Sonidegib",
+        "dose_uM": 0.05,
+        "plate": "plate13"
+      }
+    ]
+  },
+  "counts": {
+    "selected_conditions_total": 5000,
+    "conditions_by_split": {
+      "train": 4000,
+      "val": 500,
+      "test": 500
+    },
+    "edges_total": 1871,
+    "edges_by_split": {
+      "train": 1455,
+      "val": 208,
+      "test": 208
+    },
+    "selected_drugs_total": 378,
+    "drugs_by_split": {
+      "train": 378,
+      "val": 171,
+      "test": 165
+    },
+    "frozen_vocabulary_drugs": 379,
+    "selected_train_drugs": 378,
+    "unrepresented_frozen_drugs": [
+      "Sonidegib"
+    ],
+    "val_unseen_in_selected_train_drugs": [],
+    "test_unseen_in_selected_train_drugs": [],
+    "unique_control_pools": 70,
+    "total_unique_physical_cells": 2547484,
+    "treated_physical_cells": 2511697,
+    "control_physical_cells": 35787
+  },
+  "dose_distribution": {
+    "train": {
+      "0.05": 1334,
+      "0.5": 1334,
+      "5": 1332
+    },
+    "val": {
+      "0.05": 165,
+      "0.5": 168,
+      "5": 167
+    },
+    "test": {
+      "0.05": 165,
+      "0.5": 168,
+      "5": 167
+    }
+  },
+  "cell_line_distribution": {
+    "train": {
+      "CVCL_0179": 798,
+      "CVCL_0371": 801,
+      "CVCL_1055": 800,
+      "CVCL_1239": 801,
+      "CVCL_1547": 800
+    },
+    "val": {
+      "CVCL_0179": 99,
+      "CVCL_0371": 101,
+      "CVCL_1055": 100,
+      "CVCL_1239": 101,
+      "CVCL_1547": 99
+    },
+    "test": {
+      "CVCL_0179": 99,
+      "CVCL_0371": 101,
+      "CVCL_1055": 100,
+      "CVCL_1239": 101,
+      "CVCL_1547": 99
+    }
+  },
+  "pool_contract": {
+    "treated_cap": 512,
+    "control_cap": 512,
+    "training_set_size": 256,
+    "treated_cached_cells": {
+      "min": 256.0,
+      "median": 512.0,
+      "mean": 502.3394,
+      "max": 512.0
+    },
+    "treated_available_cells": {
+      "min": 256.0,
+      "median": 1070.5,
+      "mean": 1185.5346,
+      "max": 4727.0
+    },
+    "control_cached_cells": {
+      "min": 459.0,
+      "median": 512.0,
+      "mean": 511.24285714285713,
+      "max": 512.0
+    },
+    "control_available_cells": {
+      "min": 459.0,
+      "median": 2484.0,
+      "mean": 2660.5142857142855,
+      "max": 5886.0
+    },
+    "unique_control_pool_reuse": true
+  },
+  "hard_checks": {
+    "all_treated_at_least_256": true,
+    "all_controls_at_least_256": true,
+    "edge_split_leakage": 0,
+    "val_unseen_in_train_drugs": 0,
+    "test_unseen_in_train_drugs": 0,
+    "duplicate_physical_cells": 0,
+    "missing_locators": 0,
+    "worker_overlap": 0,
+    "worker_union_cells": 2547484
+  },
+  "outputs": {
+    "conditions": {
+      "path": "results/phase2_stav2_conditions.csv",
+      "sha256": "824f8dff2f55d1e99d87c95326818d1b67273e81f1df6c455eba467b64eb6c67",
+      "size_bytes": 3379322
+    },
+    "control_pools": {
+      "path": "results/phase2_stav2_control_pools.csv",
+      "sha256": "846b37865bb4a02a31bea697cd238b54c1b28f39485119b88efde847216e5922",
+      "size_bytes": 12544
+    },
+    "cache_plan": {
+      "path": "results/phase2_stav2_cache_plan.json",
+      "sha256": "2861f890eac5b9df9dd876492eaabaafc842962dfc8ce2b8ee50c19522520b65",
+      "size_bytes": 2020
+    },
+    "dose_normalization": {
+      "path": "results/phase2_stav2_dose_normalization.json",
+      "sha256": "b0757ad651609a2d2ab51c891b8a6e435bb53d028ef9551d4360a338241678fd",
+      "size_bytes": 684
+    },
+    "dynamic_sampling_audit": {
+      "path": "results/phase2_stav2_dynamic_sampling_audit.json",
+      "sha256": "ec1c0934140cc534248f5bbcbadbc991a329265440cddd31302f57242685e813",
+      "size_bytes": 17180
+    }
+  },
+  "phase2_author_extraction_started": false,
+  "phase3_started": false
+}

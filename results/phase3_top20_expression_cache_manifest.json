@@ -1,0 +1,103 @@
+{
+  "schema": "phase3_top20_expression_cache_manifest_v1",
+  "created_at_utc": "2026-09-30T16:26:50.963910+00:00",
+  "status": "pass",
+  "task": {
+    "path": "/mnt/c/SH/AIVC/phase_III_FINAL_FROZEN.md",
+    "size_bytes": 36770,
+    "sha256": "d38e07a653f2f7e2403d677b5ff4b90eb9e036bd2bc5e9e8d5a2abce58019bcc",
+    "expected_sha256": "d38e07a653f2f7e2403d677b5ff4b90eb9e036bd2bc5e9e8d5a2abce58019bcc"
+  },
+  "output": {
+    "path": "results/phase3_top20_expression_cache.npy",
+    "size_bytes": 203798848,
+    "sha256": "b429594d9f1a66108a3c2f66895533698ba7bb837b60eb328302d5c2304d7fe7",
+    "shape": [
+      2547484,
+      20
+    ],
+    "dtype": "float32",
+    "row_equals_phase2_cell_index": true,
+    "physical_cell_identity_matches_author_latent_row": true
+  },
+  "author_latent": {
+    "path": "results/phase2_author_genejepa_embeddings.npy",
+    "size_bytes": 7825870976,
+    "sha256_from_pass_manifest": "4dc190823d0489a6c6f51e45e0d326f336b4337e1196647294f5b89b3cd23beb",
+    "sha256_recomputed": false
+  },
+  "author_embedding_manifest": {
+    "path": "results/phase2_author_genejepa_embedding_manifest.json",
+    "size_bytes": 3752,
+    "sha256": "5fd812e971344ab8daf3e552f9cc476d08542cb5c26d5aab29c2ccb9b83b2e1a"
+  },
+  "phase2_subset_manifest": {
+    "path": "results/phase2_stav2_subset_manifest.json",
+    "size_bytes": 7326,
+    "sha256": "62ff0c44b007e58f499019f4a8803a88a8dd5cf8569a7b96812f8a82e5e7e833"
+  },
+  "phase2_cache_plan": {
+    "path": "results/phase2_stav2_cache_plan.json",
+    "size_bytes": 2020,
+    "sha256": "2861f890eac5b9df9dd876492eaabaafc842962dfc8ce2b8ee50c19522520b65"
+  },
+  "locator_plans": [
+    {
+      "path": "results/phase2_author_genejepa_cache/cache_worker0_plan.parquet",
+      "size_bytes": 26353596,
+      "sha256": "5b54d28f769fa069f518333487d89ba4ada851ae8584ab578bfc746ff5d670a9"
+    },
+    {
+      "path": "results/phase2_author_genejepa_cache/cache_worker1_plan.parquet",
+      "size_bytes": 26335110,
+      "sha256": "02b3de9f91a5626da642f6e2ed4a46e45ffe08829b27e284db429bb1a4fe9c37"
+    }
+  ],
+  "panel": {
+    "path": "results/phase1_top20_gene_panel.csv",
+    "size_bytes": 2051,
+    "sha256": "7dbcaf163164bcc0da86527713e744a2d4533ad5a15b160d96799ef63a16d7ba"
+  },
+  "panel_manifest": {
+    "path": "results/phase1_top20_gene_panel.json",
+    "size_bytes": 4047,
+    "sha256": "6695640bba3af3b94b6e13b03d0df8d7820e5ecbb33eeb5647a2baba5b4e1254"
+  },
+  "gene_metadata": {
+    "path": "hf_data_cache/metadata/metadata/gene_metadata.parquet",
+    "size_bytes": 1326799,
+    "sha256": "d6104d1ca570d94832be0d27ffe8b7e4e54cfd366c9080239219f9c406eb751c"
+  },
+  "target_contract": "raw counts -> sentinel removal -> map all usable genes -> full mapped-gene library size -> CP10000 -> log1p -> frozen Phase-I Top20 selection",
+  "integrity": {
+    "shape_exact": true,
+    "dtype_float32": true,
+    "finite": true,
+    "nonnegative": true,
+    "physical_cell_missing": 0,
+    "physical_cell_duplicate": 0,
+    "row_alignment_exact": true,
+    "panel_exact": true,
+    "unmapped_required_top20_genes": 0,
+    "locator_spotcheck_cells": 32,
+    "locator_spotcheck_max_abs_error": 0.0
+  },
+  "preprocessing_audit": {
+    "sentinel_cells": 2547484,
+    "unmapped_entries": 0,
+    "noninteger_count_entries": 0,
+    "duplicate_gene_entries_collapsed": 0,
+    "invalid_library_cells": 0,
+    "metadata_verified_cells": 2547484
+  },
+  "resume_state": {
+    "path": "results/phase3_top20_expression_cache_builder_state.npz",
+    "size_bytes": 2549456,
+    "sha256": "3154d6adb274b067cce525463e27db4689342237ad32ed1c4fd21a0c2e80245c"
+  },
+  "elapsed_seconds_this_session": 20.40352411699132,
+  "initial_completed_cells": 2547484,
+  "newly_completed_cells": 0,
+  "phase3_complete": false,
+  "phase4_started": false
+}

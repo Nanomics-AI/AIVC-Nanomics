@@ -1,180 +1,227 @@
-# AIVC 主线代码阅读指南
+# 技术阅读指南
 
-这份文档不是实验结果报告，而是一张“代码地图”：说明项目最终要做什么、三个模型模块怎样连接，以及建议按什么顺序阅读代码。
+## 1. 这个项目现在预测什么？
 
-## 1. 这个项目最终想做什么
-
-给定一组未处理的 control 细胞，以及药物和剂量信息，我们希望预测这些细胞经过处理后的基因表达状态。
-
-完整流程是：
+当前正式主线预测的是：给定一种细胞背景、药物和剂量，先预测药物处理后的细胞群 latent，再预测该 condition 的 Top20 基因表达变化量。
 
 ```text
-Tahoe 单细胞稀疏表达数据
-        ↓
-GeneJEPA 预处理
-        ↓
-我们训练的 GeneJEPA Epoch25 EMA Teacher
-        ↓
-每个细胞得到一个 768 维 latent
-        ↓
-ST-A 读取 control latent 和药物/剂量
-        ↓
-预测 treated latent
-        ↓
-Decoder v1
-        ↓
-预测处理后的 5000 个基因表达值
+Tahoe 真实单细胞
+  → Author GeneJEPA Epoch49 EMA Teacher
+  → 每个细胞一个 768 维 latent
+  → ST-A v2 预测 treated latent set
+  → D2 比较 control/treated 两个 latent set
+  → signed Top20 expression delta
 ```
 
-## 2. 三个模型模块分别做什么
+本仓库保留的是 Phase II / Phase III 正式实验实际运行过的原始源码，不是为 GitHub 重新整理出的另一套实现。
 
-### GeneJEPA：把一个细胞压缩成 768 维表示
+## 2. 建议阅读顺序
 
-一个细胞原本是“哪些基因出现、每个基因有多少 count”的稀疏列表。GeneJEPA 把这份长度不固定的列表编码成一个固定长度的 `[768]` 向量。
+1. Author GeneJEPA 接入：
+   - `perturbation_scripts/phase2_author_genejepa.py`
+   - `perturbation_scripts/phase1_author_genejepa.py`
+   - `perturbation_scripts/author_genejepa_epoch49_hd100_cache.py`
+2. Tahoe preprocessing 和 physical-cell cache：
+   - `perturbation_scripts/phase2_stav2_data.py`
+   - `perturbation_scripts/extract_tahoe_experiment1_full_cache_worker.py`
+   - `perturbation_scripts/extract_tahoe_latent_audit_embeddings.py`
+   - `genejepa/configs.py`
+   - `genejepa/data.py`
+3. ST-A v2 Dataset 和 sampler：
+   - `perturbation_scripts/phase2_stav2_dataset.py`
+   - `perturbation_scripts/tahoe_experiment1_latent_data.py`
+4. ST-A v2 模型与 runner：
+   - `perturbation_scripts/phase2_stav2_model.py`
+   - `perturbation_scripts/run_phase2_stav2.py`
+5. D2 data/target：
+   - `perturbation_scripts/phase3_set_decoder_data.py`
+   - `perturbation_scripts/tahoe_decoder_v1_data.py`
+6. D2 模型与 runner：
+   - `perturbation_scripts/phase3_set_decoder_model.py`
+   - `perturbation_scripts/run_phase3_set_decoder.py`
+7. 完整推理与正式评价：
+   - `perturbation_scripts/evaluate_phase3_set_decoder.py`
 
-模型内部有 512 个 learned latent tokens，每个 token 宽度为 768；它们经过 12 个 transformer block 后再求平均，最终每个细胞只输出一个 `[768]` 向量。这里的 512 是模型内部 token 数，不是一次输入 512 个细胞，也不是为每个细胞保存 `[512,768]`。
+## 3. 关键张量尺寸
 
-### ST-A：预测药物处理后的 latent
-
-ST-A 一次处理一个 256-cell set。它看到 control 细胞的 latent，以及这组细胞共同的药物和剂量特征，然后直接预测处理后细胞所在的 latent 位置。
-
-ST-A 输出仍然是 signed latent，不做 ReLU 截断：
+单个细胞经过 Author GeneJEPA：
 
 ```text
-输入 control latent： [B, 256, 768]
-药物/剂量特征：       [B, 256, 380]
-输出 treated latent： [B, 256, 768]
+final_norm tokens [512,768]
+→ 对 512 个 token 做 mean pooling
+→ cell latent [768]
 ```
 
-380 维 perturbation feature 由 379 维药物 one-hot 和 1 维标准化后的 `log10(dose_uM)` 组成。同一个 set 的 256 个细胞使用同一份药物/剂量信息。
-
-### Decoder：把 latent 还原成可解释的基因表达
-
-Decoder v1 对每个细胞分别工作：
+一个 condition：
 
 ```text
-[768] → [1024] → [1024] → [512] → [5000]
+256 cells → [256,768]
 ```
 
-输出对应冻结的 5000-gene panel，目标空间是 `log1p(CP10K)`。这一步的 CP10K 是 Decoder 的监督目标处理，不是 GeneJEPA 的输入预处理。
-
-## 3. 一个细胞从输入到输出经历什么
-
-### 3.1 GeneJEPA 输入
-
-真实代码在 [`genejepa/data.py`](../genejepa/data.py)。处理顺序是：
+ST-A v2：
 
 ```text
-原始稀疏 counts
-→ 如果首项是 sentinel，则移除首项
-→ 把 Tahoe gene token ID 映射到 GeneJEPA vocabulary
-→ log1p(count)
-→ 使用冻结的 global mean/std 做标准化
+control [B,256,768]
+→ predicted treated [B,256,768]
 ```
 
-这里不会再次做 CP10K，也不会重复 `log1p`。
-
-### 3.2 GeneJEPA 编码
-
-[`genejepa/tokenizer.py`](../genejepa/tokenizer.py) 把 gene identity 和连续表达值组合成 token embedding。
-
-[`genejepa/models.py`](../genejepa/models.py) 让 512 个 learned latent tokens 对细胞的基因 token 做 cross-attention，再经过 transformer、`final_norm` 和 mean pooling，输出一个 768 维 cell embedding。
-
-正式提取使用 Epoch25 EMA Teacher，而不是训练中的 student。入口在 [`tahoe_genejepa_embedding.py`](../perturbation_scripts/tahoe_genejepa_embedding.py)。
-
-### 3.3 embedding cache
-
-为了避免同一个物理细胞反复运行 GeneJEPA，正式流程先把每个 unique cell 提取一次，再按全局 `embedding_index` 写入 `[N,768] float32` cache。
-
-主线脚本按顺序是：
-
-1. [`prepare_tahoe_experiment1_manifests.py`](../perturbation_scripts/prepare_tahoe_experiment1_manifests.py)：固定 condition split、drug vocabulary 和 dose transform。
-2. [`plan_tahoe_experiment1_full_cache.py`](../perturbation_scripts/plan_tahoe_experiment1_full_cache.py)：生成稳定 cell locator 和 worker plan。
-3. [`extract_tahoe_experiment1_full_cache_worker.py`](../perturbation_scripts/extract_tahoe_experiment1_full_cache_worker.py)：可恢复地提取 embedding。
-4. [`merge_tahoe_experiment1_full_cache.py`](../perturbation_scripts/merge_tahoe_experiment1_full_cache.py)：按全局 index 合并 worker 输出。
-5. [`tahoe_experiment1_latent_data.py`](../perturbation_scripts/tahoe_experiment1_latent_data.py)：mmap cache，并动态无放回抽取 256-cell set。
-
-cache 中的 latent 保持原始 signed float32，不做 centering、whitening 或 L2 normalization。
-
-## 4. GeneJEPA 代码建议怎么看
-
-按下面顺序读最容易：
-
-1. [`genejepa/configs.py`](../genejepa/configs.py)：先看 `d=768`、`latents_L=512`、12 blocks、6 heads 和训练配置。
-2. [`genejepa/tokenizer.py`](../genejepa/tokenizer.py)：理解 gene ID 和 expression value 怎样进入同一个 token。
-3. [`genejepa/models.py`](../genejepa/models.py)：看 cross-attention、latent transformer、EMA Teacher 和 mean pooling。
-4. [`genejepa/data.py`](../genejepa/data.py)：核对 Tahoe 预处理只执行一次。
-5. [`genejepa/train.py`](../genejepa/train.py)：看 student、EMA Teacher、loss、optimizer 和 checkpoint 流程。
-
-## 5. ST-A 代码建议怎么看
-
-先读 [`tahoe_experiment1_latent_data.py`](../perturbation_scripts/tahoe_experiment1_latent_data.py)，确认 DataLoader 输出：
+D2：
 
 ```text
-ctrl_cell_emb  [B,256,768]
-pert_cell_emb  [B,256,768]
-pert_emb       [B,256,380]
+control [B,256,768]
+treated [B,256,768]
+→ signed Top20 delta [B,20]
 ```
 
-再读 [`run_tahoe_experiment1_st_a.py`](../perturbation_scripts/run_tahoe_experiment1_st_a.py)：
+## 4. Author GeneJEPA 做什么？
 
-- basal encoder 把 768 维 control latent 投影到 hidden space；
-- perturbation encoder 把 380 维 drug/dose 特征投影到相同宽度；
-- bidirectional Llama backbone 在 256 个 cell token 上建模；
-- `project_out` 直接产生 absolute treated latent；
-- 训练目标是真实 treated set，loss 是 Energy distance。
-
-最后看 [`state_genejepa_st_a_compat.patch`](../patches/state_genejepa_st_a_compat.patch)。这个 patch 只解决一件事：允许最终激活为 identity，从而保留 GeneJEPA latent 的负值。
-
-## 6. Decoder 代码建议怎么看
-
-先读 [`tahoe_decoder_v1_data.py`](../perturbation_scripts/tahoe_decoder_v1_data.py)：它通过稳定 locator 找回与 latent 对应的同一个物理细胞，并构造：
+这里使用的是外部上游
+[BiostateAI/GeneJEPA](https://github.com/BiostateAI/GeneJEPA)，固定 commit：
 
 ```text
-原始 sparse counts
-→ 对该细胞所有成功映射到 GeneJEPA vocabulary 的基因求 library size
-→ 使用完整 mapped-gene library 做 CP10K
+a2f4d7218b17f2f52cc5f1cc94420c8ef1ae3265
+```
+
+正式 checkpoint 是 Epoch49 EMA Teacher。其结构为 24 个 transformer block、12 个 attention head、hidden dim 768、512 个 latent token。正式 extraction 捕获 EMA Teacher 的 `final_norm [B,512,768]`，再执行一次 `mean(dim=1)`，保存 signed float32 `[B,768]`。
+
+Tahoe 输入只执行一次 sentinel handling、gene-token mapping、`log1p` 和 frozen global mean/std normalization。输出 latent 不做 centering、whitening、L2 normalization 或 ReLU。
+
+## 5. set 是怎么抽的？
+
+每个 treated condition 和 matched DMSO control pool 最多缓存 512 个 physical cells。每次训练/评价抽取 256 个。共享 sampler 使用：
+
+```text
+seed + epoch + pair_id + side
+```
+
+生成稳定 seed，再用 PCG64 在 set 内无放回抽样。不同 epoch 之间可以重合。`phase2_cell_index` 是 locator、Author embedding 与 Top20 expression cache 之间的行对齐契约。
+
+## 6. ST-A v2 做什么？
+
+ST-A v2 的输入是 control latent set `[B,256,768]`。药物使用：
+
+```text
+Embedding(379,768)
+```
+
+剂量使用：
+
+```text
+dose_scaled = log1p(dose_uM) / log1p(5)
+```
+
+conditioning 为：
+
+```text
+control latent + drug embedding × normalized dose
+```
+
+输出是 signed、absolute treated latent set `[B,256,768]`。它不预测 residual。训练 loss 为 Energy distance：`SamplesLoss(loss="energy", blur=0.05)`。
+
+正式训练入口：
+
+```text
+perturbation_scripts/run_phase2_stav2.py train
+```
+
+## 7. D2 做什么？
+
+D2 不是“对每个单细胞做绝对表达量解码”的 decoder。它同时接收 control set 和 treated set。
+
+两个 set 共用同一个 encoder：
+
+```text
+Linear 768→256
+TransformerEncoder ×2
+  d_model=256
+  nhead=8
+  FFN=1024
+  dropout=0
+  norm_first=True
+  无 positional encoding
+scalar attention pooling
+```
+
+得到：
+
+```text
+h_control
+h_treated
+```
+
+然后计算：
+
+```text
+h_treated - h_control
+```
+
+最后通过 `256→256→128→20` readout，输出 signed Top20 delta。
+
+`phase3_set_decoder_model.py` 原文件同时包含 D1 和 D2，因为它就是正式 validation-only architecture comparison 使用的源码。当前选中的路线是 D2，没有为了 GitHub 新建 D2-only 实现。
+
+正式训练入口：
+
+```text
+perturbation_scripts/run_phase3_set_decoder.py train --variant d2
+```
+
+## 8. Top20 target 如何产生？
+
+正式 target 复用 `tahoe_decoder_v1_data.py` 中的函数：
+
+```text
+全部 mapped raw gene counts
+→ 用全部 mapped genes 计算 library size
+→ CP10K
 → log1p
-→ 最后选择冻结的 5000-gene panel
+→ 按 frozen Top20 panel 取列
 ```
 
-因此，5000-gene panel 只决定 Decoder 最终监督和输出哪些基因，不会决定
-CP10K 的 library-size denominator。
-
-再读 [`run_genejepa_decoder_v1.py`](../perturbation_scripts/run_genejepa_decoder_v1.py)，重点看 `build_decoder()`、训练 DataLoader、MSE、checkpoint 和 validation。
-
-冻结的 gene panel 与 contract 位于：
-
-- [`results/genejepa_decoder_v1_gene_panel.csv`](../results/genejepa_decoder_v1_gene_panel.csv)
-- [`results/genejepa_decoder_v1_gene_panel.json`](../results/genejepa_decoder_v1_gene_panel.json)
-- [`results/genejepa_decoder_v1_contract.json`](../results/genejepa_decoder_v1_contract.json)
-
-## 7. 关键张量尺寸汇总
-
-| 阶段 | 张量尺寸 | 含义 |
-| --- | --- | --- |
-| GeneJEPA 内部 latent array | `[B,512,768]` | 每个细胞内部的 512 个 learned tokens |
-| GeneJEPA cell embedding | `[B,768]` | 对 512 tokens 求平均后的单细胞表示 |
-| ST-A control input | `[B,256,768]` | 每个 condition 的 256 个 control 细胞 |
-| drug/dose input | `[B,256,380]` | 379-d drug one-hot + 1-d dose |
-| ST-A output | `[B,256,768]` | 预测的 treated cell set |
-| Decoder input | `[N,768]` | 每个预测细胞的 latent |
-| Decoder output | `[N,5000]` | 预测的 5000-gene `log1p(CP10K)` 表达 |
-
-## 8. 最短阅读路线
-
-如果只想先抓住主线，按这个顺序即可：
+因此 Top20 panel 不参与 CP10K 分母的计算。GT 是：
 
 ```text
-README.md
-→ genejepa/configs.py
-→ genejepa/data.py
-→ genejepa/models.py
-→ tahoe_genejepa_embedding.py
-→ tahoe_experiment1_latent_data.py
-→ run_tahoe_experiment1_st_a.py
-→ tahoe_decoder_v1_data.py
-→ run_genejepa_decoder_v1.py
+GT delta = mean(real treated Top20) - mean(matched real control Top20)
 ```
 
-数据、embedding cache 和 checkpoint 不在 GitHub。它们的本地路径和 SHA-256 见 [`provenance.md`](provenance.md)。完整的精简前代码历史仍保存在 `project-code-audit-20260923` 分支。
+## 9. 训练 D2 时为什么不用 ST-A？
+
+D2 训练时使用真实配对数据：
+
+```text
+real control latent set
++ real treated latent set
+→ D2
+→ Top20 delta
+```
+
+这样 D2 学习 set-level latent difference 到 expression delta 的映射，不把 ST-A 的预测误差混进 decoder training target。
+
+## 10. 真正完整推理时 ST-A 怎么接回 D2？
+
+```text
+real control + drug/dose
+→ ST-A v2
+→ predicted treated latent set
+
+real control + predicted treated
+→ D2
+→ Top20 delta
+```
+
+正式入口为：
+
+```text
+perturbation_scripts/evaluate_phase3_set_decoder.py evaluate
+```
+
+同一个 evaluator 还会计算 D1 和 frozen Old Decoder reference。`run_phase1_top20_decoder.py` 之所以保留，是因为正式 evaluator 直接 import 其中的 `build_decoder()`；Old Decoder 只是同评价器 reference，不是当前最终 decoder。
+
+## 11. 为什么代码里还有历史文件名？
+
+当前仓库尽量保留实际正式实验运行过的原始代码，不为了 GitHub 展示重新重构。因此部分依赖仍带有早期实验名称，例如 `hd100`、`audit`、`b0`、`phase1` 或 `decoder_v1`。这些名称对应开发历史；文件本身被保留，是因为当前正式 Phase II/III 源码仍真实调用其中的函数。原样保留可以保证 GitHub 中接受审阅的代码与实际实验代码一致。
+
+两个被保留的原文件还包含只属于早期命令分支的 ARC7 延迟 import。当前 Phase II/III 入口不会执行这些分支，因此独立 ARC7 脚本仍按范围要求排除。正式 Author 路线只调用 `author_genejepa_epoch49_hd100_cache.py` 的 loader/configuration；正式 evaluator 只调用 `run_phase1_top20_decoder.py` 的 `build_decoder()`。代码中的 external `genejepa.train` 会在 `register_author_config_aliases()` 切换 package source 后，从固定 commit 的 Author GeneJEPA checkout 解析。
+
+## 12. 哪些内容不在 GitHub？
+
+Tahoe parquet、condition tables、physical-cell locator plans、Author/ST-A/D2 checkpoint、embedding cache、Top20 expression cache、日志和正式 evaluation outputs 都是外部 runtime artifacts。预期路径和 SHA 见 `docs/provenance.md`。
